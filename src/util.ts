@@ -1,6 +1,5 @@
-import fetch from "node-fetch";
-import { alienChars } from "./constants";
 import { compileString } from "./compile";
+import { alienChars } from "./constants";
 import { evaluate } from "./evaluate";
 import { tokenize } from "./lex";
 import { parse } from "./parse";

@@ -4,7 +4,6 @@ import {
   alienStringToHumanString,
   humanIntegerToAlienInteger,
   humanStringToAlienString,
-  logObject,
 } from "./util";
 
 export type Result =
@@ -13,9 +12,24 @@ export type Result =
       value: string;
     }
   | { type: "integer"; value: number }
-  | { type: "boolean"; value: boolean };
+  | { type: "boolean"; value: boolean }
+  | { type: "lambda"; value: ASTNode };
 
 type Env = { [key: number]: ASTNode };
+
+// const cache: { [key: number]: { result: Result; env: Env }[] } = {};
+// if (cache[node.id] !== undefined) {
+//   const cached = cache[node.id].find((c) => true);
+//   if (cached !== undefined) {
+//     console.log("found!");
+//     return cached.result;
+//   }
+// }
+// console.log(env, lambdaArguments, node.value, node.child);
+// if (cache[node.id] === undefined) {
+//   cache[node.id] = [];
+// }
+// cache[node.id].push({ result, env });
 
 export const evaluate = (
   node: ASTNode,
@@ -30,23 +44,22 @@ export const evaluate = (
     case "boolean":
       return node;
     case "lambda":
-      if (lambdaArguments.length === 0) {
-        logObject(node);
-        throw new Error("Lambda called without arguments");
-      }
-      return evaluate(
-        node.child,
-        {
-          ...env,
-          [node.value as number]: lambdaArguments[0],
-        },
-        lambdaArguments.slice(1)
-      );
+      console.log("lambda", node.value, lambdaArguments.length, env, "\n\n");
+      let result =
+        lambdaArguments.length === 0
+          ? evaluate(node.child, env, [])
+          : evaluate(
+              node.child,
+              { ...env, [node.value as number]: lambdaArguments[0] },
+              lambdaArguments.slice(1)
+            );
+      return result;
 
     case "variable":
       if (env[node.value as number] === undefined) {
         throw new Error("Variable not defined");
       }
+
       return evaluate(env[node.value as number], env);
 
     case "if":
@@ -158,11 +171,13 @@ export const evaluate = (
               (evaluate(node.right, env).value as boolean),
           };
         case "string-concat":
+          const value =
+            (evaluate(node.left, env).value as string) +
+            (evaluate(node.right, env).value as string);
+          // logObject(evaluate(node.right, env).value as string);
           return {
             type: "string",
-            value:
-              (evaluate(node.left, env).value as string) +
-              (evaluate(node.right, env).value as string),
+            value,
           };
         case "take":
           return {
@@ -180,6 +195,10 @@ export const evaluate = (
             ),
           };
         case "apply":
+          if (node.right == null) {
+            throw new Error("apply has no right");
+          }
+          // logObject(node.right);
           return evaluate(node.left, env, [node.right].concat(lambdaArguments));
       }
   }

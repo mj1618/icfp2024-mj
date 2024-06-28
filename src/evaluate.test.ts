@@ -4,6 +4,9 @@ import { tokenize } from "./lex";
 import { parse } from "./parse";
 import assert = require("assert/strict");
 const util = require("util");
+const v8 = require("v8");
+v8.setFlagsFromString("--stack-size=9999999999");
+v8.setFlagsFromString("--stack_size=9999999999");
 
 test("value", () => {
   assert.strictEqual(evaluate(parse(tokenize("I/6"), 0)).value, 1337);
@@ -61,9 +64,11 @@ test("lambda", () => {
 test("hard", () => {
   console.log(
     util.inspect(
-      parse(
-        tokenize(
-          `B. SF B$ B$ L" B$ L" B$ L# B$ v" B$ v# v# L# B$ v" B$ v# v# L$ L# ? B= v# I" v" B. v" B$ v$ B- v# I" Sl I#,`
+      evaluate(
+        parse(
+          tokenize(
+            `B. SF B$ B$ L" B$ L" B$ L# B$ v" B$ v# v# L# B$ v" B$ v# v# L$ L# ? B= v# I" v" B. v" B$ v$ B- v# I" Sl I#,`
+          )
         )
       ),
       {

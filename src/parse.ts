@@ -1,6 +1,6 @@
 import { Token } from "./constants";
 
-export type ASTNode =
+export type ASTNode = { id: number } & (
   | {
       type: "integer";
       value: number;
@@ -52,28 +52,29 @@ export type ASTNode =
   | {
       type: "variable";
       value: number;
-    };
+    }
+);
 
 export const parse = (
   tokens: Token[],
   fromIndex = 0
 ): ASTNode & { newFromIndex: number } => {
   const curr = tokens[fromIndex];
-
+  const id = fromIndex;
   switch (curr.type) {
     case "string":
-      return { ...curr, newFromIndex: fromIndex + 1 };
+      return { ...curr, newFromIndex: fromIndex + 1, id };
     case "integer":
-      return { ...curr, newFromIndex: fromIndex + 1 };
+      return { ...curr, newFromIndex: fromIndex + 1, id };
     case "boolean":
-      return { ...curr, newFromIndex: fromIndex + 1 };
+      return { ...curr, newFromIndex: fromIndex + 1, id };
     case "unary":
       const child = parse(tokens, fromIndex + 1);
-      return { ...curr, child, newFromIndex: child.newFromIndex };
+      return { ...curr, child, newFromIndex: child.newFromIndex, id };
     case "binary":
       const left = parse(tokens, fromIndex + 1);
       const right = parse(tokens, left.newFromIndex);
-      return { ...curr, left, right, newFromIndex: right.newFromIndex };
+      return { ...curr, left, right, newFromIndex: right.newFromIndex, id };
     case "if":
       const condition = parse(tokens, fromIndex + 1);
       const then = parse(tokens, condition.newFromIndex);
@@ -84,11 +85,17 @@ export const parse = (
         then,
         else: elseNode,
         newFromIndex: elseNode.newFromIndex,
+        id,
       };
     case "lambda":
       const lamChild = parse(tokens, fromIndex + 1);
-      return { ...curr, child: lamChild, newFromIndex: lamChild.newFromIndex };
+      return {
+        ...curr,
+        child: lamChild,
+        newFromIndex: lamChild.newFromIndex,
+        id,
+      };
     case "variable":
-      return { ...curr, newFromIndex: fromIndex + 1 };
+      return { ...curr, newFromIndex: fromIndex + 1, id };
   }
 };

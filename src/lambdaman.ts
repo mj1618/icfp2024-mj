@@ -80,11 +80,18 @@ export const solveLambdaMan = async (n: number) => {
     item === "L" ? [row, col] : null
   )[0];
 
+  let orig = curr.slice();
+  let prev = curr.slice();
+
   while (npills > 0) {
+    const comparisonPoint = [0, 0]; //prev; // curr // prev
     const pills = loopGrid(grid, (row, col, item) => {
       if (item === ".") {
         return [
-          Math.pow(row - curr[0], 2) + Math.pow(col - curr[1], 2),
+          Math.pow(row - comparisonPoint[0], 2) +
+            Math.pow(col - comparisonPoint[1], 2),
+          0,
+          0,
           row,
           col,
         ];
@@ -93,10 +100,10 @@ export const solveLambdaMan = async (n: number) => {
       }
     });
     pills.sort();
-    const pill = pills[0].slice(1);
+    const pill = pills[0].slice(3);
 
     const nextPath = pathSearch(grid, curr, pill);
-
+    prev = curr.slice();
     for (let i = 0; i < nextPath.length; i++) {
       grid[curr[0]][curr[1]] = " ";
       if (nextPath[i] === UP) {
