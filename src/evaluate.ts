@@ -4,6 +4,7 @@ import {
   alienStringToHumanString,
   humanIntegerToAlienInteger,
   humanStringToAlienString,
+  logObject,
 } from "./util";
 
 export type Result =
@@ -30,6 +31,7 @@ export const evaluate = (
       return node;
     case "lambda":
       if (lambdaArguments.length === 0) {
+        logObject(node);
         throw new Error("Lambda called without arguments");
       }
       return evaluate(

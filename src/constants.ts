@@ -20,6 +20,8 @@ export const language_test = `? B= B$ B$ B$ B$ L$ L$ L$ L# v$ I" I# I$ I% I$ ? B
 }
   */
 
+export const lambdaMan1 = "###.#...\n...L..##\n.#######\n";
+
 export const alienChars = `abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!"#$%&'()*+,-./:;<=>?@[\\]^_\`|~ \n`;
 
 export type TokenInteger = { type: "integer"; value: number };

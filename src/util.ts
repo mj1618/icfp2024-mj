@@ -1,5 +1,9 @@
 import fetch from "node-fetch";
 import { alienChars } from "./constants";
+import { compileString } from "./compile";
+import { evaluate } from "./evaluate";
+import { tokenize } from "./lex";
+import { parse } from "./parse";
 const util = require("util");
 
 const token = "1c424ec1-904c-4ebc-bda0-deaa2d02c95d";
@@ -59,4 +63,18 @@ export const logObject = (obj: Object) => {
       colors: true,
     })
   );
+};
+
+export const sendRawToServer = async (source: string) => {
+  const response = await send(source);
+  console.log(response);
+  logObject(evaluate(parse(tokenize(response))));
+  return evaluate(parse(tokenize(response)));
+};
+
+export const sendToServer = async (source: string) => {
+  const response = await send(compileString(source));
+  console.log(response);
+  logObject(evaluate(parse(tokenize(response))));
+  return evaluate(parse(tokenize(response)));
 };
