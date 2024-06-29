@@ -13,7 +13,7 @@ export const main = async () => {
   //   }
   // }
   // await sendToServer("get spaceship");
-  for (let i = 1; i <= 1; i++) {
+  for (let i = 22; i <= 50; i++) {
     try {
       await solveSpaceship(i);
       console.log("Solved: ", i);
