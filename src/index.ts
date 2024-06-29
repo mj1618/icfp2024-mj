@@ -3,25 +3,25 @@ import { solveSpaceship } from "./spaceship";
 import { sendToServer } from "./util";
 
 export const main = async () => {
-  // for (let i = 20; i <= 21; i++) {
-  //   try {
-  //     await solveLambdaMan(i);
-  //     console.log("Solved: ", i);
-  //   } catch (e) {
-  //     console.log("Could not solve: ", i);
-  //     console.error(e);
-  //   }
-  // }
-  // await sendToServer("get spaceship");
-  for (let i = 22; i <= 50; i++) {
+  for (let i = 13; i <= 13; i++) {
     try {
-      await solveSpaceship(i);
+      await solveLambdaMan(i);
       console.log("Solved: ", i);
     } catch (e) {
       console.log("Could not solve: ", i);
       console.error(e);
     }
   }
+  // await sendToServer("get efficiency4");
+  // for (let i = 25; i <= 25; i++) {
+  //   try {
+  //     await solveSpaceship(i);
+  //     console.log("Solved: ", i);
+  //   } catch (e) {
+  //     console.log("Could not solve: ", i);
+  //     console.error(e);
+  //   }
+  // }
 
   // await sendToServer("get spaceship");
   // const res = evaluate(

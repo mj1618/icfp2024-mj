@@ -7,3 +7,5 @@ export const compileString = (str: string) => {
   }
   return "S" + result;
 };
+
+export const reduceString = (str: string) => {};

@@ -186,10 +186,25 @@ arg@^4.1.0:
   resolved "https://registry.yarnpkg.com/arg/-/arg-4.1.3.tgz#269fc7ad5b8e42cb63c896d5666017261c144089"
   integrity sha512-58S9QDqG0Xx27YwPSt9fJxivjYl432YCwfDMfZ+71RAqUrZef7LrKQZ3LHLOwCS4FLNBplP533Zx895SeOCHvA==
 
+big-integer@^1.6.52:
+  version "1.6.52"
+  resolved "https://registry.yarnpkg.com/big-integer/-/big-integer-1.6.52.tgz#60a887f3047614a8e1bffe5d7173490a97dc8c85"
+  integrity sha512-QxD8cf2eVqJOOz63z6JIN9BzvVs/dlySa5HGSBH5xtR8dPteIRQnBxxKqkNTiT6jbDTF6jAfrd4oMcND9RGbQg==
+
 create-require@^1.1.0:
   version "1.1.1"
   resolved "https://registry.yarnpkg.com/create-require/-/create-require-1.1.1.tgz#c1d7e8f1e5f6cfc9ff65f9cd352d37348756c333"
   integrity sha512-dcKFX3jn0MpIaXjisoRvexIJVEKzaq7z2rZKxf+MSr9TkdmHmsU4m2lcLojrj/FHl8mk5VxMmYA+ftRkP/3oKQ==
+
+decorate-all@^1.2.1:
+  version "1.2.1"
+  resolved "https://registry.yarnpkg.com/decorate-all/-/decorate-all-1.2.1.tgz#3749c49359a50a63d6a4ec891ec102613e45d3b5"
+  integrity sha512-4lq/hEXS7n+G3J1dRqS10GFd5/xhvPo17a9Dmq+UPWBiHGAv/NcSthI3jZlkxnZCPLc8F+oRzF6h2Cc2ahc5jA==
+
+default-proxy-handler@^1.0.0:
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/default-proxy-handler/-/default-proxy-handler-1.0.2.tgz#b95d80fadb711f463becd167c357697f1012e27b"
+  integrity sha512-HJfzqLgnlA1tcR8Cg6/MCTe6eqFgLmjO9vRyEIRoN82ol+sE/RObLPT9d4AOCEBaJUR7lr2EflUxzE7oSjCstw==
 
 diff@^4.0.1:
   version "4.0.2"
@@ -249,10 +264,30 @@ node-fetch@^2.6.6:
   dependencies:
     whatwg-url "^5.0.0"
 
+proxy-handler-decorators@^1.0.1:
+  version "1.0.4"
+  resolved "https://registry.yarnpkg.com/proxy-handler-decorators/-/proxy-handler-decorators-1.0.4.tgz#f50d4eeebf3bea460be72d81e85e9cd475f27113"
+  integrity sha512-aOBp5gMPPoDwTLURDsnkza2RfqXrEclQAHO2XdomBwP5x1bwVaen7LJMaqB8nyH9Hi93DsrQ/vta2aFUuimJOw==
+  dependencies:
+    decorate-all "^1.2.1"
+
+reflect-metadata@^0.2.2:
+  version "0.2.2"
+  resolved "https://registry.yarnpkg.com/reflect-metadata/-/reflect-metadata-0.2.2.tgz#400c845b6cba87a21f2c65c4aeb158f4fa4d9c5b"
+  integrity sha512-urBwgfrvVP/eAyXx4hluJivBKzuEbSQs9rKWCrCkbSxNv8mxPcUZKeuoF3Uy4mJl3Lwprp6yy5/39VWigZ4K6Q==
+
 resolve-pkg-maps@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/resolve-pkg-maps/-/resolve-pkg-maps-1.0.0.tgz#616b3dc2c57056b5588c31cdf4b3d64db133720f"
   integrity sha512-seS2Tj26TBVOC2NIc2rOe2y2ZO7efxITtLZcGSOnHHNOQ7CkiUBfw0Iw2ck6xkIhPwLhKNLS8BO+hEpngQlqzw==
+
+tail-call-proxy@^1.1.12:
+  version "1.1.12"
+  resolved "https://registry.yarnpkg.com/tail-call-proxy/-/tail-call-proxy-1.1.12.tgz#105e0203b5f072fd30817ad82efc9184a81fda8b"
+  integrity sha512-pGTx0WRLlgF6/h1uYsU1pTgg/WLGlwbg0WlfmcCgh75K+tcxS7UA1qCpwnXgXPuSIOC/lzpAYjp6Tu/CSC7M+A==
+  dependencies:
+    default-proxy-handler "^1.0.0"
+    proxy-handler-decorators "^1.0.1"
 
 tr46@~0.0.3:
   version "0.0.3"

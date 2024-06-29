@@ -53,7 +53,9 @@ export type Token =
         | "string-concat"
         | "take"
         | "drop"
-        | "apply";
+        | "apply"
+        | "lazy-apply"
+        | "strict-apply";
     }
   | { type: "boolean"; value: boolean }
   | { type: "if" }
@@ -79,7 +81,9 @@ export const binaryMap: {
     | "string-concat"
     | "take"
     | "drop"
-    | "apply";
+    | "apply"
+    | "lazy-apply"
+    | "strict-apply";
 } = {
   "+": "add",
   "-": "subtract",
@@ -95,4 +99,6 @@ export const binaryMap: {
   T: "take",
   D: "drop",
   $: "apply",
+  "~": "lazy-apply",
+  "!": "strict-apply",
 };

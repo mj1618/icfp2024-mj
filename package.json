@@ -18,6 +18,9 @@
     "typescript": "^5.5.2"
   },
   "dependencies": {
-    "node-fetch": "^2.6.6"
+    "big-integer": "^1.6.52",
+    "node-fetch": "^2.6.6",
+    "reflect-metadata": "^0.2.2",
+    "tail-call-proxy": "^1.1.12"
   }
 }

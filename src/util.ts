@@ -75,6 +75,12 @@ export const sendRawToServer = async (source: string) => {
   return evaluate(parse(tokenize(response)));
 };
 
+export const debug = (...args: any[]) => {
+  if (process.env.DEBUG === "true") {
+    console.log(...args);
+  }
+};
+
 export const sendToServer = async (source: string) => {
   const response = await send(compileString(source));
   console.log(response);

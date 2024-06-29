@@ -1,11 +1,9 @@
-import { log } from "console";
 import { ASTNode } from "./parse";
 import {
   alienIntegerToHumanInteger,
   alienStringToHumanString,
   humanIntegerToAlienInteger,
   humanStringToAlienString,
-  logObject,
 } from "./util";
 
 export type Result =
@@ -18,20 +16,6 @@ export type Result =
   | { type: "lambda"; value: ASTNode };
 
 type Env = { [key: number]: ASTNode };
-
-// const cache: { [key: number]: { result: Result; env: Env }[] } = {};
-// if (cache[node.id] !== undefined) {
-//   const cached = cache[node.id].find((c) => true);
-//   if (cached !== undefined) {
-//     console.log("found!");
-//     return cached.result;
-//   }
-// }
-// console.log(env, lambdaArguments, node.value, node.child);
-// if (cache[node.id] === undefined) {
-//   cache[node.id] = [];
-// }
-// cache[node.id].push({ result, env });
 
 export const evaluate = (
   node: ASTNode,
@@ -46,12 +30,6 @@ export const evaluate = (
     case "boolean":
       return node;
     case "lambda":
-      // console.log("lambda", node.value, lambdaArguments.length, env, "\n\n");
-      // if (lambdaArguments.length === 0) {
-      //   logObject(node.child);
-      //   logObject(env);
-      // }
-
       let result =
         lambdaArguments.length === 0
           ? evaluate(node.child, env, [])
@@ -66,17 +44,16 @@ export const evaluate = (
       if (env[node.value as number] === undefined) {
         throw new Error("Variable not defined");
       }
-
-      return evaluate(env[node.value as number], env);
+      return evaluate(env[node.value as number], env, lambdaArguments);
 
     case "if":
-      if (evaluate(node.condition, env).value as boolean) {
-        return evaluate(node.then, env);
+      if (evaluate(node.condition, env, lambdaArguments).value as boolean) {
+        return evaluate(node.then, env, lambdaArguments);
       } else {
-        return evaluate(node.else, env);
+        return evaluate(node.else, env, lambdaArguments);
       }
     case "unary":
-      const child = evaluate(node.child, env);
+      const child = evaluate(node.child, env, lambdaArguments);
       switch (node.value) {
         case "negate":
           return { type: "integer", value: -1 * (child.value as number) };
@@ -103,27 +80,27 @@ export const evaluate = (
           return {
             type: "integer",
             value:
-              (evaluate(node.left, env).value as number) +
-              (evaluate(node.right, env).value as number),
+              (evaluate(node.left, env, lambdaArguments).value as number) +
+              (evaluate(node.right, env, lambdaArguments).value as number),
           };
         case "subtract":
           return {
             type: "integer",
             value:
-              (evaluate(node.left, env).value as number) -
-              (evaluate(node.right, env).value as number),
+              (evaluate(node.left, env, lambdaArguments).value as number) -
+              (evaluate(node.right, env, lambdaArguments).value as number),
           };
         case "mult":
           return {
             type: "integer",
             value:
-              (evaluate(node.left, env).value as number) *
-              (evaluate(node.right, env).value as number),
+              (evaluate(node.left, env, lambdaArguments).value as number) *
+              (evaluate(node.right, env, lambdaArguments).value as number),
           };
         case "div":
           const divVal =
-            (evaluate(node.left, env).value as number) /
-            (evaluate(node.right, env).value as number);
+            (evaluate(node.left, env, lambdaArguments).value as number) /
+            (evaluate(node.right, env, lambdaArguments).value as number);
           if (divVal < 0) {
             return {
               type: "integer",
@@ -139,49 +116,48 @@ export const evaluate = (
           return {
             type: "integer",
             value:
-              (evaluate(node.left, env).value as number) %
-              (evaluate(node.right, env).value as number),
+              (evaluate(node.left, env, lambdaArguments).value as number) %
+              (evaluate(node.right, env, lambdaArguments).value as number),
           };
         case "lt":
           return {
             type: "boolean",
             value:
-              (evaluate(node.left, env).value as number) <
-              (evaluate(node.right, env).value as number),
+              (evaluate(node.left, env, lambdaArguments).value as number) <
+              (evaluate(node.right, env, lambdaArguments).value as number),
           };
         case "gt":
           return {
             type: "boolean",
             value:
-              (evaluate(node.left, env).value as number) >
-              (evaluate(node.right, env).value as number),
+              (evaluate(node.left, env, lambdaArguments).value as number) >
+              (evaluate(node.right, env, lambdaArguments).value as number),
           };
         case "equal":
           return {
             type: "boolean",
             value:
-              evaluate(node.left, env).value ===
-              evaluate(node.right, env).value,
+              evaluate(node.left, env, lambdaArguments).value ===
+              evaluate(node.right, env, lambdaArguments).value,
           };
         case "or":
           return {
             type: "boolean",
             value:
-              (evaluate(node.left, env).value as boolean) ||
-              (evaluate(node.right, env).value as boolean),
+              (evaluate(node.left, env, lambdaArguments).value as boolean) ||
+              (evaluate(node.right, env, lambdaArguments).value as boolean),
           };
         case "and":
           return {
             type: "boolean",
             value:
-              (evaluate(node.left, env).value as boolean) &&
-              (evaluate(node.right, env).value as boolean),
+              (evaluate(node.left, env, lambdaArguments).value as boolean) &&
+              (evaluate(node.right, env, lambdaArguments).value as boolean),
           };
         case "string-concat":
           const value =
-            (evaluate(node.left, env).value as string) +
-            (evaluate(node.right, env).value as string);
-          // logObject(evaluate(node.right, env).value as string);
+            (evaluate(node.left, env, lambdaArguments).value as string) +
+            (evaluate(node.right, env, lambdaArguments).value as string);
           return {
             type: "string",
             value,
@@ -189,23 +165,35 @@ export const evaluate = (
         case "take":
           return {
             type: "string",
-            value: (evaluate(node.right, env).value as string).slice(
+            value: (
+              evaluate(node.right, env, lambdaArguments).value as string
+            ).slice(
               0,
-              evaluate(node.left, env).value as number
+              evaluate(node.left, env, lambdaArguments).value as number
             ),
           };
         case "drop":
           return {
             type: "string",
-            value: (evaluate(node.right, env).value as string).slice(
-              evaluate(node.left, env).value as number
-            ),
+            value: (
+              evaluate(node.right, env, lambdaArguments).value as string
+            ).slice(evaluate(node.left, env, lambdaArguments).value as number),
           };
         case "apply":
           if (node.right == null) {
             throw new Error("apply has no right");
           }
-          // logObject(node.right);
+          console.log("apply", lambdaArguments.length);
+          return evaluate(node.left, env, [node.right].concat(lambdaArguments));
+        case "lazy-apply":
+          if (node.right == null) {
+            throw new Error("apply has no right");
+          }
+          return evaluate(node.left, env, [node.right].concat(lambdaArguments));
+        case "strict-apply":
+          if (node.right == null) {
+            throw new Error("apply has no right");
+          }
           return evaluate(node.left, env, [node.right].concat(lambdaArguments));
       }
   }

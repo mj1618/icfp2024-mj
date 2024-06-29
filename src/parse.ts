@@ -30,7 +30,9 @@ export type ASTNode = { id: number } & (
         | "string-concat"
         | "take"
         | "drop"
-        | "apply";
+        | "apply"
+        | "lazy-apply"
+        | "strict-apply";
       left: ASTNode;
       right: ASTNode;
     }

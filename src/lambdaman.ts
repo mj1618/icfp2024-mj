@@ -85,14 +85,14 @@ export const solveLambdaMan = async (n: number) => {
   let prev = curr.slice();
 
   while (npills > 0) {
-    const comparisonPoint = [0, 0]; //prev; // curr // prev
+    const comparisonPoint = curr; //prev; // curr // prev
     const pills = loopGrid(grid, (row, col, item) => {
       if (item === ".") {
         return [
           Math.pow(row - comparisonPoint[0], 2) +
             Math.pow(col - comparisonPoint[1], 2),
-          0,
-          0,
+          row,
+          col,
           row,
           col,
         ];
@@ -124,9 +124,9 @@ export const solveLambdaMan = async (n: number) => {
     }
 
     path += nextPath;
-    // console.log(nextPath);
-    // console.log(grid.map((row) => row.join("")).join("\n"));
-    // console.log("");
+    console.log(nextPath);
+    console.log(grid.map((row) => row.join("")).join("\n"));
+    console.log("");
   }
   console.log(path);
   fs.writeFileSync(`./soln/lambdaman/${n}.txt`, path);

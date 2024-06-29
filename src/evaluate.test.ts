@@ -58,33 +58,34 @@ test("lambda", () => {
   );
 });
 
-// test("hard", () => {
-//   console.log(
-//     util.inspect(
-//       evaluate(
-//         parse(
-//           tokenize(
-//             `B. SF B$ B$ L" B$ L" B$ L# B$ v" B$ v# v# L# B$ v" B$ v# v# L$ L# ? B= v# I" v" B. v" B$ v$ B- v# I" Sl I#,`
-//           )
-//         )
-//       ),
-//       {
-//         showHidden: false,
-//         depth: null,
-//         colors: true,
-//       }
-//     )
-//   );
+test("hard", () => {
+  process.env.DEBUG = "true";
 
-//   assert.strictEqual(
-//     evaluate(
-//       parse(
-//         tokenize(
-//           `B. SF B$ B$ L" B$ L" B$ L# B$ v" B$ v# v# L# B$ v" B$ v# v# L$ L# ? B= v# I" v" B. v" B$ v$ B- v# I" Sl I#,`
-//         )
-//       )
-//     ).value,
-//     "Hello World!"
-//   );
-// });
+  console.log(
+    util.inspect(
+      parse(
+        tokenize(
+          `B. SF B$ B$ L" B$ L" B$ L# B$ v" B$ v# v# L# B$ v" B$ v# v# L$ L# ? B= v# I" v" B. v" B$ v$ B- v# I" Sl I#,`
+          // `B$ L# B$ v# v# L# B$ v" B$ v# v# L$ L# ? B= v# I" v" B. v" B$ v$ B- v# I" Sl I#,`
+        )
+      ),
+      {
+        showHidden: false,
+        depth: null,
+        colors: true,
+      }
+    )
+  );
+
+  assert.strictEqual(
+    evaluate(
+      parse(
+        tokenize(
+          `B. SF B$ B$ L" B$ L" B$ L# B$ v" B$ v# v# L# B$ v" B$ v# v# L$ L# ? B= v# I" v" B. v" B$ v$ B- v# I" Sl I#,`
+        )
+      )
+    ).value,
+    "Hello World!"
+  );
+});
 // B. SF B$ B$ L" B$ L" B$ L# B$ v" B$ v# v# L# B$ v" B$ v# v# L$ L# ? B= v# I" v" B. v" B$ v$ B- v# I" Sl I#,
