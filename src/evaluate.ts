@@ -12,8 +12,7 @@ export type Result =
       value: string;
     }
   | { type: "integer"; value: number }
-  | { type: "boolean"; value: boolean }
-  | { type: "lambda"; value: ASTNode };
+  | { type: "boolean"; value: boolean };
 
 type Env = { [key: number]: ASTNode };
 
