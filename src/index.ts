@@ -1,17 +1,29 @@
 import { solveLambdaMan } from "./lambdaman";
+import { solveSpaceship } from "./spaceship";
+import { sendToServer } from "./util";
 
 export const main = async () => {
-  for (let i = 21; i <= 21; i++) {
+  // for (let i = 20; i <= 21; i++) {
+  //   try {
+  //     await solveLambdaMan(i);
+  //     console.log("Solved: ", i);
+  //   } catch (e) {
+  //     console.log("Could not solve: ", i);
+  //     console.error(e);
+  //   }
+  // }
+  // await sendToServer("get spaceship");
+  for (let i = 1; i <= 1; i++) {
     try {
-      await solveLambdaMan(i);
+      await solveSpaceship(i);
       console.log("Solved: ", i);
     } catch (e) {
       console.log("Could not solve: ", i);
+      console.error(e);
     }
   }
 
-  // await sendToServer("solve language_test 4w3s0m3");
-
+  // await sendToServer("get spaceship");
   // const res = evaluate(
   //   parse(
   //     tokenize(

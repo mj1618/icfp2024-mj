@@ -1,9 +1,11 @@
+import { log } from "console";
 import { ASTNode } from "./parse";
 import {
   alienIntegerToHumanInteger,
   alienStringToHumanString,
   humanIntegerToAlienInteger,
   humanStringToAlienString,
+  logObject,
 } from "./util";
 
 export type Result =
@@ -44,7 +46,12 @@ export const evaluate = (
     case "boolean":
       return node;
     case "lambda":
-      console.log("lambda", node.value, lambdaArguments.length, env, "\n\n");
+      // console.log("lambda", node.value, lambdaArguments.length, env, "\n\n");
+      // if (lambdaArguments.length === 0) {
+      //   logObject(node.child);
+      //   logObject(env);
+      // }
+
       let result =
         lambdaArguments.length === 0
           ? evaluate(node.child, env, [])

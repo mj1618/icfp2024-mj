@@ -64,6 +64,10 @@ export const logObject = (obj: Object) => {
   );
 };
 
+export const distance = (a: number[], b: number[]) => {
+  return Math.pow(a[0] - b[0], 2) + Math.pow(a[1] - b[1], 2);
+};
+
 export const sendRawToServer = async (source: string) => {
   const response = await send(source);
   console.log(response);

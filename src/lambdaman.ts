@@ -1,4 +1,5 @@
 import { sendToServer } from "./util";
+const fs = require("fs");
 
 const loopGrid = (
   grid: string[][],
@@ -71,7 +72,7 @@ export const solveLambdaMan = async (n: number) => {
   let grid = temp.slice(0, temp.length - 1).map((row) => row.split(""));
   const nrows = grid.length;
   const ncols = grid[0].length;
-  console.log(grid.map((row) => row.join("")).join("\n"));
+  // console.log(grid.map((row) => row.join("")).join("\n"));
 
   let path = "";
 
@@ -123,10 +124,12 @@ export const solveLambdaMan = async (n: number) => {
     }
 
     path += nextPath;
-    console.log(nextPath);
-    console.log(grid.map((row) => row.join("")).join("\n"));
-    console.log("");
+    // console.log(nextPath);
+    // console.log(grid.map((row) => row.join("")).join("\n"));
+    // console.log("");
   }
   console.log(path);
+  fs.writeFileSync(`./soln/lambdaman/${n}.txt`, path);
+
   await sendToServer(`solve lambdaman${n} ${path}`);
 };
