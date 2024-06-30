@@ -1,4 +1,4 @@
-import { ASTNode } from "./parse";
+import { ASTLambda, ASTNode, ASTValue } from "./parse";
 import {
   alienIntegerToHumanInteger,
   alienStringToHumanString,
@@ -12,15 +12,17 @@ export type Result =
       value: string;
     }
   | { type: "integer"; value: number }
-  | { type: "boolean"; value: boolean };
+  | { type: "boolean"; value: boolean }
+  | ASTNode;
 
 type Env = { [key: number]: ASTNode };
 
-export const evaluate = (
+const replaceVar = (
   node: ASTNode,
-  env: Env = {},
-  lambdaArguments: ASTNode[] = []
-): Result => {
+  varName: number,
+  value: ASTNode
+): ASTNode => {
+  // console.log("replacing", varName, value, node);
   switch (node.type) {
     case "string":
       return node;
@@ -29,33 +31,119 @@ export const evaluate = (
     case "boolean":
       return node;
     case "lambda":
-      let result =
-        lambdaArguments.length === 0
-          ? evaluate(node.child, env, [])
-          : evaluate(
-              node.child,
-              { ...env, [node.value as number]: lambdaArguments[0] },
-              lambdaArguments.slice(1)
-            );
-      return result;
-
-    case "variable":
-      if (env[node.value as number] === undefined) {
-        throw new Error("Variable not defined");
-      }
-      return evaluate(env[node.value as number], env, lambdaArguments);
-
-    case "if":
-      if (evaluate(node.condition, env, lambdaArguments).value as boolean) {
-        return evaluate(node.then, env, lambdaArguments);
+      if (node.value === varName) {
+        return node;
       } else {
-        return evaluate(node.else, env, lambdaArguments);
+        return { ...node, child: replaceVar(node.child, varName, value) };
+      }
+    case "variable":
+      // console.log("var", node.value, varName, value);
+      if (node.value === varName) {
+        return value;
+      } else {
+        return node;
+      }
+    case "if":
+      return {
+        ...node,
+        condition: replaceVar(node.condition, varName, value),
+        then: replaceVar(node.then, varName, value),
+        else: replaceVar(node.else, varName, value),
+      };
+    case "unary":
+      return { ...node, child: replaceVar(node.child, varName, value) };
+    case "binary":
+      return {
+        ...node,
+        left: replaceVar(node.left, varName, value),
+        right: replaceVar(node.right, varName, value),
+      };
+  }
+};
+export const evaluate = (node: ASTNode, env: Env = {}): ASTValue => {
+  console.log("");
+  root = node;
+  return evaluateAST(node, env) as ASTValue;
+};
+
+export const logValue = (message: string) => {
+  process.stdout.write(message + " ");
+};
+
+export const logAST = (node: ASTNode) => {
+  console.log(node);
+  switch (node.type) {
+    case "string":
+      logValue(`(Str:${node.value})`);
+      break;
+    case "integer":
+      logValue(`(Int:${node.value})`);
+      break;
+    case "boolean":
+      logValue(`(Bool:${node.value})`);
+      break;
+    case "lambda":
+      logValue(`(lambda${node.value}`);
+      logAST(node.child);
+      logValue(")");
+      break;
+    case "variable":
+      logValue(`(variable${node.value})`);
+      break;
+    case "if":
+      logValue("(if ");
+      logAST(node.condition);
+      logAST(node.then);
+      logAST(node.else);
+      logValue(")");
+      break;
+    case "unary":
+      logValue(`(${node.value}`);
+      logAST(node.child);
+      logValue(")");
+      break;
+    case "binary":
+      logValue(`(${node.value}`);
+      logAST(node.left);
+      logAST(node.right);
+      logValue(")");
+      break;
+  }
+};
+
+let root: ASTNode | null = null;
+
+export const evaluateAST = (node: ASTNode, env: Env = {}): ASTNode => {
+  // if (root != null) {
+  //   logAST(node);
+  //   console.log("");
+  // }
+
+  switch (node.type) {
+    case "string":
+      return node;
+    case "integer":
+      return node;
+    case "boolean":
+      return node;
+    case "lambda":
+      return node;
+    case "variable":
+      return node;
+    case "if":
+      if ((evaluateAST(node.condition, env) as ASTValue).value as boolean) {
+        return evaluateAST(node.then, env);
+      } else {
+        return evaluateAST(node.else, env);
       }
     case "unary":
-      const child = evaluate(node.child, env, lambdaArguments);
+      const child = evaluateAST(node.child, env) as ASTValue;
       switch (node.value) {
         case "negate":
-          return { type: "integer", value: -1 * (child.value as number) };
+          return {
+            type: "integer",
+            value: -1 * (child.value as number),
+          };
         case "not":
           return { type: "boolean", value: !(child.value as boolean) };
         case "string-to-int":
@@ -79,27 +167,27 @@ export const evaluate = (
           return {
             type: "integer",
             value:
-              (evaluate(node.left, env, lambdaArguments).value as number) +
-              (evaluate(node.right, env, lambdaArguments).value as number),
+              ((evaluateAST(node.left, env) as ASTValue).value as number) +
+              ((evaluateAST(node.right, env) as ASTValue).value as number),
           };
         case "subtract":
           return {
             type: "integer",
             value:
-              (evaluate(node.left, env, lambdaArguments).value as number) -
-              (evaluate(node.right, env, lambdaArguments).value as number),
+              ((evaluateAST(node.left, env) as ASTValue).value as number) -
+              ((evaluateAST(node.right, env) as ASTValue).value as number),
           };
         case "mult":
           return {
             type: "integer",
             value:
-              (evaluate(node.left, env, lambdaArguments).value as number) *
-              (evaluate(node.right, env, lambdaArguments).value as number),
+              ((evaluateAST(node.left, env) as ASTValue).value as number) *
+              ((evaluateAST(node.right, env) as ASTValue).value as number),
           };
         case "div":
           const divVal =
-            (evaluate(node.left, env, lambdaArguments).value as number) /
-            (evaluate(node.right, env, lambdaArguments).value as number);
+            ((evaluateAST(node.left, env) as ASTValue).value as number) /
+            ((evaluateAST(node.right, env) as ASTValue).value as number);
           if (divVal < 0) {
             return {
               type: "integer",
@@ -115,48 +203,48 @@ export const evaluate = (
           return {
             type: "integer",
             value:
-              (evaluate(node.left, env, lambdaArguments).value as number) %
-              (evaluate(node.right, env, lambdaArguments).value as number),
+              ((evaluateAST(node.left, env) as ASTValue).value as number) %
+              ((evaluateAST(node.right, env) as ASTValue).value as number),
           };
         case "lt":
           return {
             type: "boolean",
             value:
-              (evaluate(node.left, env, lambdaArguments).value as number) <
-              (evaluate(node.right, env, lambdaArguments).value as number),
+              ((evaluateAST(node.left, env) as ASTValue).value as number) <
+              ((evaluateAST(node.right, env) as ASTValue).value as number),
           };
         case "gt":
           return {
             type: "boolean",
             value:
-              (evaluate(node.left, env, lambdaArguments).value as number) >
-              (evaluate(node.right, env, lambdaArguments).value as number),
+              ((evaluateAST(node.left, env) as ASTValue).value as number) >
+              ((evaluateAST(node.right, env) as ASTValue).value as number),
           };
         case "equal":
           return {
             type: "boolean",
             value:
-              evaluate(node.left, env, lambdaArguments).value ===
-              evaluate(node.right, env, lambdaArguments).value,
+              (evaluateAST(node.left, env) as ASTValue).value ==
+              (evaluateAST(node.right, env) as ASTValue).value,
           };
         case "or":
           return {
             type: "boolean",
             value:
-              (evaluate(node.left, env, lambdaArguments).value as boolean) ||
-              (evaluate(node.right, env, lambdaArguments).value as boolean),
+              ((evaluateAST(node.left, env) as ASTValue).value as boolean) ||
+              ((evaluateAST(node.right, env) as ASTValue).value as boolean),
           };
         case "and":
           return {
             type: "boolean",
             value:
-              (evaluate(node.left, env, lambdaArguments).value as boolean) &&
-              (evaluate(node.right, env, lambdaArguments).value as boolean),
+              ((evaluateAST(node.left, env) as ASTValue).value as boolean) &&
+              ((evaluateAST(node.right, env) as ASTValue).value as boolean),
           };
         case "string-concat":
           const value =
-            (evaluate(node.left, env, lambdaArguments).value as string) +
-            (evaluate(node.right, env, lambdaArguments).value as string);
+            ((evaluateAST(node.left, env) as ASTValue).value as string) +
+            ((evaluateAST(node.right, env) as ASTValue).value as string);
           return {
             type: "string",
             value,
@@ -165,35 +253,42 @@ export const evaluate = (
           return {
             type: "string",
             value: (
-              evaluate(node.right, env, lambdaArguments).value as string
+              (evaluateAST(node.right, env) as ASTValue).value as string
             ).slice(
               0,
-              evaluate(node.left, env, lambdaArguments).value as number
+              (evaluateAST(node.left, env) as ASTValue).value as number
             ),
           };
         case "drop":
           return {
             type: "string",
             value: (
-              evaluate(node.right, env, lambdaArguments).value as string
-            ).slice(evaluate(node.left, env, lambdaArguments).value as number),
+              (evaluateAST(node.right, env) as ASTValue).value as string
+            ).slice((evaluateAST(node.left, env) as ASTValue).value as number),
           };
         case "apply":
-          if (node.right == null) {
-            throw new Error("apply has no right");
+          let left = node.left;
+          if (left.type !== "lambda") {
+            left = evaluateAST(node.left, env) as ASTLambda;
           }
-          console.log("apply", lambdaArguments.length);
-          return evaluate(node.left, env, [node.right].concat(lambdaArguments));
+
+          const newChild = replaceVar(
+            left.child,
+            (left as ASTLambda).value as number,
+            node.right
+          ) as ASTLambda;
+          left = {
+            ...left,
+            child: newChild,
+          };
+
+          return evaluateAST(left.child, env);
+
         case "lazy-apply":
-          if (node.right == null) {
-            throw new Error("apply has no right");
-          }
-          return evaluate(node.left, env, [node.right].concat(lambdaArguments));
+          throw new Error("lazy-apply not implemented");
+
         case "strict-apply":
-          if (node.right == null) {
-            throw new Error("apply has no right");
-          }
-          return evaluate(node.left, env, [node.right].concat(lambdaArguments));
+          throw new Error("strict-apply not implemented");
       }
   }
 };

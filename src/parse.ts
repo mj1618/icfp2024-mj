@@ -1,6 +1,6 @@
 import { Token } from "./constants";
 
-export type ASTNode = { id: number } & (
+export type ASTValue =
   | {
       type: "integer";
       value: number;
@@ -9,6 +9,22 @@ export type ASTNode = { id: number } & (
       type: "string";
       value: string;
     }
+  | {
+      type: "boolean";
+      value: boolean;
+    }
+  | {
+      type: "variable";
+      value: number;
+    };
+export type ASTLambda = {
+  type: "lambda";
+  value: number;
+  child: ASTNode;
+};
+
+export type ASTNode = { id?: number } & (
+  | ASTValue
   | {
       type: "unary";
       value: "negate" | "not" | "string-to-int" | "int-to-string";
@@ -37,20 +53,12 @@ export type ASTNode = { id: number } & (
       right: ASTNode;
     }
   | {
-      type: "boolean";
-      value: boolean;
-    }
-  | {
       type: "if";
       condition: ASTNode;
       then: ASTNode;
       else: ASTNode;
     }
-  | {
-      type: "lambda";
-      value: number;
-      child: ASTNode;
-    }
+  | ASTLambda
   | {
       type: "variable";
       value: number;

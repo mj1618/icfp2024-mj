@@ -69,7 +69,9 @@ export const solveLambdaMan = async (n: number) => {
   let temp = ((await sendToServer(`get lambdaman${n}`)).value as string).split(
     "\n"
   );
-  let grid = temp.slice(0, temp.length - 1).map((row) => row.split(""));
+  temp = temp.filter((row) => row.length > 0);
+  let grid = temp.map((row) => row.split(""));
+  console.log(grid);
   const nrows = grid.length;
   const ncols = grid[0].length;
   // console.log(grid.map((row) => row.join("")).join("\n"));
