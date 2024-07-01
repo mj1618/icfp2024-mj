@@ -17,7 +17,7 @@ export type Result =
 
 type Env = { [key: number]: ASTNode };
 
-const replaceVar = (
+export const replaceVar = (
   node: ASTNode,
   varName: number,
   value: ASTNode
@@ -61,7 +61,7 @@ const replaceVar = (
   }
 };
 export const evaluate = (node: ASTNode, env: Env = {}): ASTValue => {
-  console.log("");
+  // console.log("");
   root = node;
   return evaluateAST(node, env) as ASTValue;
 };
@@ -70,43 +70,58 @@ export const logValue = (message: string) => {
   process.stdout.write(message + " ");
 };
 
-export const logAST = (node: ASTNode) => {
-  console.log(node);
+const repeat = (str: string, n: number) => {
+  return new Array(n * 1).fill(str).join("");
+};
+
+export const logAST = (node: ASTNode, indent = 0) => {
+  // console.log(node);
   switch (node.type) {
     case "string":
-      logValue(`(Str:${node.value})`);
+      logValue(`${repeat(" ", indent)}(Str:${node.value})`);
       break;
     case "integer":
-      logValue(`(Int:${node.value})`);
+      logValue(`${repeat(" ", indent)}(Int:${node.value})`);
       break;
     case "boolean":
-      logValue(`(Bool:${node.value})`);
+      logValue(`${repeat(" ", indent)}(Bool:${node.value})`);
       break;
     case "lambda":
-      logValue(`(lambda${node.value}`);
-      logAST(node.child);
-      logValue(")");
+      logValue(`${repeat(" ", indent)}(lambda${node.value}`);
+      console.log();
+      logAST(node.child, indent + 1);
+      console.log();
+      logValue(`${repeat(" ", indent)})`);
       break;
     case "variable":
-      logValue(`(variable${node.value})`);
+      logValue(`${repeat(" ", indent)}(variable${node.value})`);
       break;
     case "if":
-      logValue("(if ");
-      logAST(node.condition);
-      logAST(node.then);
-      logAST(node.else);
-      logValue(")");
+      logValue(`${repeat(" ", indent)}(if `);
+      console.log();
+      logAST(node.condition, indent + 1);
+      console.log();
+      logAST(node.then, indent + 1);
+      console.log();
+      logAST(node.else, indent + 1);
+      console.log();
+      logValue(`${repeat(" ", indent)})`);
       break;
     case "unary":
-      logValue(`(${node.value}`);
-      logAST(node.child);
-      logValue(")");
+      logValue(`${repeat(" ", indent)}(${node.value}`);
+      console.log();
+      logAST(node.child, indent + 1);
+      console.log();
+      logValue(`${repeat(" ", indent)})`);
       break;
     case "binary":
-      logValue(`(${node.value}`);
-      logAST(node.left);
-      logAST(node.right);
-      logValue(")");
+      logValue(`${repeat(" ", indent)}(${node.value}`);
+      console.log();
+      logAST(node.left, indent + 1);
+      console.log();
+      logAST(node.right, indent + 1);
+      console.log();
+      logValue(`${repeat(" ", indent)})`);
       break;
   }
 };
@@ -131,6 +146,7 @@ export const evaluateAST = (node: ASTNode, env: Env = {}): ASTNode => {
     case "variable":
       return node;
     case "if":
+      // logAST(node);
       if ((evaluateAST(node.condition, env) as ASTValue).value as boolean) {
         return evaluateAST(node.then, env);
       } else {

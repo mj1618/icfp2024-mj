@@ -1,4 +1,3 @@
-import { ASTValue } from "./parse";
 import { sendToServer } from "./util";
 const fs = require("fs");
 
@@ -66,10 +65,10 @@ export const pathSearch = (
   return "";
 };
 
-export const solveLambdaMan = async (n: number) => {
-  let temp = (
-    ((await sendToServer(`get lambdaman${n}`)) as ASTValue).value as string
-  ).split("\n");
+export const solveLambdaMan3 = async (n: number) => {
+  let temp = ((await sendToServer(`get lambdaman${n}`)).value as string).split(
+    "\n"
+  );
   temp = temp.filter((row) => row.length > 0);
   let grid = temp.map((row) => row.split(""));
   console.log(grid);
@@ -89,16 +88,30 @@ export const solveLambdaMan = async (n: number) => {
 
   while (npills > 0) {
     const comparisonPoint = curr; //prev; // curr // prev
-    const pills = loopGrid(grid, (row, col, item) => {
+
+    let pills: any[] = [];
+    let shortest = Infinity;
+
+    loopGrid(grid, (row, col, item) => {
+      const distance = Math.sqrt(
+        Math.abs(row - comparisonPoint[0]) + Math.abs(col - comparisonPoint[1])
+      );
+      if (distance > shortest) {
+        return null;
+      }
       if (item === ".") {
-        return [
-          Math.pow(row - comparisonPoint[0], 2) +
-            Math.pow(col - comparisonPoint[1], 2),
-          row,
-          col,
-          row,
-          col,
-        ];
+        const path = pathSearch(grid, comparisonPoint, [row, col]);
+        if (path.length < shortest) {
+          shortest = path.length;
+          pills = [[path.length, row, col, row, col]];
+        }
+        // pills.push([
+        //   pathSearch(grid, comparisonPoint, [row, col]).length,
+        //   row,
+        //   col,
+        //   row,
+        //   col,
+        // ]);
       } else {
         return null;
       }

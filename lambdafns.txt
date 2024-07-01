@@ -1,0 +1,50 @@
+# these are just the standard lambda functions for arithmetic
+
+ZERO = lambda s: lambda z: z
+ONE = lambda s: lambda z: s(z)
+TWO = lambda s: lambda z: s(s(z))
+
+SUCCESSOR = lambda w: lambda y: lambda x: y(w(y)(x))
+
+THREE = SUCCESSOR(TWO)
+FOUR = SUCCESSOR(THREE)
+SIX = SUCCESSOR(SUCCESSOR(FOUR))
+
+ADD = lambda x: lambda y: y(SUCCESSOR)(x)
+
+MULTIPLY = lambda x: lambda y: lambda z: x(y(z))
+
+# conditionals
+TRUE = lambda x: lambda y: x
+FALSE = lambda x: lambda y: y
+
+AND = lambda x: lambda y: x(y)(FALSE)
+
+OR = lambda x: lambda y: x(TRUE)(y)
+
+NOT = lambda x: x(FALSE)(TRUE)
+
+# function which is true if a number is zero and false otherwise
+IS_ZERO = lambda n: n(FALSE)(NOT)(FALSE)
+
+#pred function
+PAIR = lambda a: lambda b: lambda z: z(a)(b)
+
+# Φ function to generate (n+1, n) from (n, n-1)
+PHI = lambda p: PAIR(SUCCESSOR(p(TRUE)))(p(TRUE))
+
+# Predecessor function
+PRED = lambda n: n(PHI)(PAIR(ZERO)(ZERO))(FALSE)
+
+#also these just for printing reasons
+increment = lambda x: x + 1  # illegal in terms of lambda calculus but nevertheless helps visualize things
+print_nr = lambda x: print(x(increment)(0))  # illegal in lambda calculus but just for simplicity
+#now we do the recursion
+
+Y = lambda y : (lambda x : y((x)(x))) (lambda x : y((x) (x)))
+
+R = lambda r : lambda n: ((IS_ZERO(n)))(ZERO(n(SUCCESSOR(r(PRED(n))))))
+
+SUM = lambda x : Y(R)(x)
+
+print_nr(SUM(THREE))
