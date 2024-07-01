@@ -128,22 +128,14 @@ export const logAST = (node: ASTNode, indent = 0) => {
 
 let root: ASTNode | null = null;
 
-type NodeAction = {
-  node: ASTNode;
-  env: Env;
-  result?: ASTNode;
-};
-
-export const evaluateAST = (root: ASTNode, env: Env = {}): ASTNode => {
-  const stack: NodeAction[] = [{ node: root, env }];
-  const results = new Map<ASTNode, ASTNode>();
+export const evaluateAST = (node: ASTNode, env: Env = {}): ASTNode => {
+  let stack = [{ node: node, env: env }];
+  let result: ASTNode | null = null;
 
   while (stack.length > 0) {
-    const { node, env, result } = stack.pop()!;
-    if (result) {
-      results.set(node, result);
-      continue;
-    }
+    const popped = stack.pop();
+    if (!popped) continue;
+    let { node, env } = popped;
 
     switch (node.type) {
       case "string":
@@ -151,107 +143,159 @@ export const evaluateAST = (root: ASTNode, env: Env = {}): ASTNode => {
       case "boolean":
       case "lambda":
       case "variable":
-        results.set(node, node);
+        result = node;
         break;
+      
       case "if":
-        const conditionResult = results.get(node.condition) as ASTValue;
-        if (conditionResult && conditionResult.type === "boolean") {
-          stack.push({
-            node,
-            env,
-            result: conditionResult.value ? node.then : node.else,
-          });
-        } else {
-          stack.push({ node: node.condition, env });
+        const conditionValue = (evaluateAST(node.condition, env) as ASTValue).value as boolean;
+        stack.push({ node: conditionValue ? node.then : node.else, env: env });
+        break;
+
+      case "unary":
+        const child = evaluateAST(node.child, env) as ASTValue;
+        switch (node.value) {
+          case "negate":
+            result = { type: "integer", value: -1 * (child.value as number) };
+            break;
+          case "not":
+            result = { type: "boolean", value: !(child.value as boolean) };
+            break;
+          case "string-to-int":
+            result = {
+              type: "integer",
+              value: alienIntegerToHumanInteger(humanStringToAlienString(child.value as string))
+            };
+            break;
+          case "int-to-string":
+            result = {
+              type: "string",
+              value: alienStringToHumanString(humanIntegerToAlienInteger(child.value as number))
+            };
+            break;
         }
         break;
-      case "unary":
-        stack.push({ node: node.child, env });
-        stack.push({
-          node,
-          env,
-          result: (() => {
-            const child = results.get(node.child) as ASTValue;
-            switch (node.value) {
-              case "negate":
-                return { type: "integer", value: -1 * (child.value as number) };
-              case "not":
-                return { type: "boolean", value: !(child.value as boolean) };
-              case "string-to-int":
-                return {
-                  type: "integer",
-                  value: alienIntegerToHumanInteger(
-                    humanStringToAlienString(child.value as string)
-                  ),
-                };
-              case "int-to-string":
-                return {
-                  type: "string",
-                  value: alienStringToHumanString(
-                    humanIntegerToAlienInteger(child.value as number)
-                  ),
-                };
-              default:
-                throw new Error(`Unsupported unary operation: ${node}`);
-            }
-          })(),
-        });
-        break;
+
       case "binary":
-        stack.push({ node: node.left, env });
-        stack.push({ node: node.right, env });
-        stack.push({
-          node,
-          env,
-          result: (() => {
-            const left = results.get(node.left) as ASTValue;
-            const right = results.get(node.right) as ASTValue;
-            switch (node.value) {
-              case "add":
-                return { type: "integer", value: (left.value as number) + (right.value as number) };
-              case "subtract":
-                return { type: "integer", value: (left.value as number) - (right.value as number) };
-              case "mult":
-                return { type: "integer", value: (left.value as number) * (right.value as number) };
-              case "div":
-                const divVal = (left.value as number) / (right.value as number);
-                return { type: "integer", value: divVal < 0 ? Math.ceil(divVal) : Math.floor(divVal) };
-              case "mod":
-                return { type: "integer", value: (left.value as number) % (right.value as number) };
-              case "lt":
-                return { type: "boolean", value: (left.value as number) < (right.value as number) };
-              case "gt":
-                return { type: "boolean", value: (left.value as number) > (right.value as number) };
-              case "equal":
-                return { type: "boolean", value: left.value == right.value };
-              case "or":
-                return { type: "boolean", value: (left.value as boolean) || (right.value as boolean) };
-              case "and":
-                return { type: "boolean", value: (left.value as boolean) && (right.value as boolean) };
-              case "string-concat":
-                return { type: "string", value: (left.value as string) + (right.value as string) };
-              case "take":
-                return { type: "string", value: (right.value as string).slice(0, left.value as number) };
-              case "drop":
-                return { type: "string", value: (right.value as string).slice(left.value as number) };
-              case "apply":
-                let lambda = node.left.type === "lambda" ? node.left : results.get(node.left) as ASTLambda;
-                const newChild = replaceVar(lambda.child, (lambda as ASTLambda).value as number, node.right) as ASTLambda;
-                lambda = { ...lambda, child: newChild };
-                return results.get(lambda.child);
-              case "lazy-apply":
-              case "strict-apply":
-                throw new Error(`${node.value} not implemented`);
-              default:
-                throw new Error(`Unsupported binary operation: ${node}`);
-            }
-          })(),
-        });
+        const left = evaluateAST(node.left, env) as ASTValue;
+        const right = evaluateAST(node.right, env) as ASTValue;
+        switch (node.value) {
+          case "add":
+          case "subtract":
+          case "mult":
+          case "div":
+          case "mod":
+          case "lt":
+          case "gt":
+          case "equal":
+          case "or":
+          case "and":
+            result = calculateBinaryOperation(node.value, left, right);
+            break;
+          case "string-concat":
+          case "take":
+          case "drop":
+            result = calculateStringOperation(node.value, left, right);
+            break;
+          case "apply":
+            // Apply logic here
+            break;
+          case "lazy-apply":
+          case "strict-apply":
+            throw new Error(`${node.value} not implemented`);
+            break;
+        }
         break;
-      default:
-        throw new Error(`Unsupported node type: ${node}`);
+    }
+
+    if (stack.length === 0) {
+      if (result === null) {
+        throw new Error("Evaluation failed: result is null.");
+      }
+      return result;
     }
   }
-
-  return results.get(root) as ASTNode;
+  throw new Error("Evaluation failed: result is null.");
 };
+
+function calculateBinaryOperation(operator: string, left: ASTValue, right: ASTValue): ASTNode {
+  switch (operator) {
+    case "add":
+      return {
+        type: "integer",
+        value: (left.value as number) + (right.value as number),
+      };
+    case "subtract":
+      return {
+        type: "integer",
+        value: (left.value as number) - (right.value as number),
+      };
+    case "mult":
+      return {
+        type: "integer",
+        value: (left.value as number) * (right.value as number),
+      };
+    case "div":
+      // Handling division, considering integer division rules:
+      const divResult = (left.value as number) / (right.value as number);
+      return {
+        type: "integer",
+        value: divResult < 0 ? Math.ceil(divResult) : Math.floor(divResult),
+      };
+    case "mod":
+      return {
+        type: "integer",
+        value: (left.value as number) % (right.value as number),
+      };
+    case "lt":
+      return {
+        type: "boolean",
+        value: (left.value as number) < (right.value as number),
+      };
+    case "gt":
+      return {
+        type: "boolean",
+        value: (left.value as number) > (right.value as number),
+      };
+    case "equal":
+      return {
+        type: "boolean",
+        value: left.value === right.value,
+      };
+    case "or":
+      return {
+        type: "boolean",
+        value: (left.value as boolean) || (right.value as boolean),
+      };
+    case "and":
+      return {
+        type: "boolean",
+        value: (left.value as boolean) && (right.value as boolean),
+      };
+    default:
+      throw new Error(`Unsupported binary operation: ${operator}`);
+  }
+}
+
+function calculateStringOperation(operator: string, left: ASTValue, right: ASTValue): ASTNode {
+  switch (operator) {
+    case "string-concat":
+      return {
+        type: "string",
+        value: (left.value as string) + (right.value as string),
+      };
+    case "take":
+      // The 'take' operation should take the first 'left.value' number of characters from 'right.value'
+      return {
+        type: "string",
+        value: (right.value as string).substring(0, left.value as number),
+      };
+    case "drop":
+      // The 'drop' operation should drop the first 'left.value' number of characters from 'right.value'
+      return {
+        type: "string",
+        value: (right.value as string).substring(left.value as number),
+      };
+    default:
+      throw new Error(`Unsupported string operation: ${operator}`);
+  }
+}
