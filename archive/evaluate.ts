@@ -1,10 +1,10 @@
-import { ASTLambda, ASTNode, ASTValue } from "./parse";
+import { ASTLambda, ASTNode, ASTValue } from "../src/parse";
 import {
   alienIntegerToHumanInteger,
   alienStringToHumanString,
   humanIntegerToAlienInteger,
   humanStringToAlienString,
-} from "./util";
+} from "../src/util";
 
 export type Result =
   | {

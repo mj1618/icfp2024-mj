@@ -31,8 +31,8 @@ export const main = async () => {
   //   `solve lambdaman3 DRDRLLLUDLLUURURLLURLUURRRRRDDDDULULULRRD`
   // );
   // DRDRDRLLLUDLLUURURLLURLURRRRRDDDDULULULRRD
-  console.log((await sendToServer(`get 3d`)).value);
-  console.log((await sendToServer(`get 3d2`)).value);
+  console.log((await sendToServer(`get scoreboard`)).value);
+  // console.log((await sendToServer(`get 3d2`)).value);
   // logAST()
   // B$ L! B$ v! B$ v! B$ v! B$ v! B$ v! B$ v! B$ v! B$ v! B$ v! B$ v! B$ v! B$ v! B$ v! B$ v! B$ v! B$ v! B$ v! B$ v! B$ v! B$ v! B$ v! B$ v! I" L! B+ B+ v! v! B+ v! v!
   // await sendRawToServer(`B. ${compileString("solve efficiency1 ")} U$ I"`);

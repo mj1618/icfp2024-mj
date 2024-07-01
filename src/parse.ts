@@ -23,7 +23,7 @@ export type ASTLambda = {
   child: ASTNode;
 };
 
-export type ASTNode = { id?: number } & (
+export type ASTNode = { id?: number; parentId?: number } & (
   | ASTValue
   | {
       type: "unary";
@@ -67,28 +67,36 @@ export type ASTNode = { id?: number } & (
 
 export const parse = (
   tokens: Token[],
-  fromIndex = 0
+  fromIndex = 0,
+  parentId: number = -1
 ): ASTNode & { newFromIndex: number } => {
   const curr = tokens[fromIndex];
   const id = fromIndex;
   switch (curr.type) {
     case "string":
-      return { ...curr, newFromIndex: fromIndex + 1, id };
+      return { ...curr, newFromIndex: fromIndex + 1, id, parentId };
     case "integer":
-      return { ...curr, newFromIndex: fromIndex + 1, id };
+      return { ...curr, newFromIndex: fromIndex + 1, id, parentId };
     case "boolean":
-      return { ...curr, newFromIndex: fromIndex + 1, id };
+      return { ...curr, newFromIndex: fromIndex + 1, id, parentId };
     case "unary":
-      const child = parse(tokens, fromIndex + 1);
-      return { ...curr, child, newFromIndex: child.newFromIndex, id };
+      const child = parse(tokens, fromIndex + 1, fromIndex);
+      return { ...curr, child, newFromIndex: child.newFromIndex, id, parentId };
     case "binary":
-      const left = parse(tokens, fromIndex + 1);
-      const right = parse(tokens, left.newFromIndex);
-      return { ...curr, left, right, newFromIndex: right.newFromIndex, id };
+      const left = parse(tokens, fromIndex + 1, fromIndex);
+      const right = parse(tokens, left.newFromIndex, fromIndex);
+      return {
+        ...curr,
+        left,
+        right,
+        newFromIndex: right.newFromIndex,
+        id,
+        parentId,
+      };
     case "if":
-      const condition = parse(tokens, fromIndex + 1);
-      const then = parse(tokens, condition.newFromIndex);
-      const elseNode = parse(tokens, then.newFromIndex);
+      const condition = parse(tokens, fromIndex + 1, fromIndex);
+      const then = parse(tokens, condition.newFromIndex, fromIndex);
+      const elseNode = parse(tokens, then.newFromIndex, fromIndex);
       return {
         type: "if",
         condition,
@@ -96,16 +104,18 @@ export const parse = (
         else: elseNode,
         newFromIndex: elseNode.newFromIndex,
         id,
+        parentId,
       };
     case "lambda":
-      const lamChild = parse(tokens, fromIndex + 1);
+      const lamChild = parse(tokens, fromIndex + 1, fromIndex);
       return {
         ...curr,
         child: lamChild,
         newFromIndex: lamChild.newFromIndex,
         id,
+        parentId,
       };
     case "variable":
-      return { ...curr, newFromIndex: fromIndex + 1, id };
+      return { ...curr, newFromIndex: fromIndex + 1, id, parentId };
   }
 };

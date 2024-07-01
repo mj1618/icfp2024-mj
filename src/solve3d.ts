@@ -88,8 +88,8 @@ const palindrome = `
 0	=	.	.	.	.	.	.	.	.	.	.	.	.	.	.	.	.	.	.	18	@	1
 .	.	.	.	.	0	+	.	>	.	>	.	>	.	.	.	.	.	.	.	.	11	.
 .	#	.	.	.	.	.	.	A	.	A	.	.	v	.	.	.	.	.	.	.	.	.
-^	.	>	.	>	.	>	.	=		/	S	.	.	.	.	.	.	.	.	.	.	.
-.	<	.	<	0	.	.	v	.	.	.	.	.	v	.	.	.	.		.	.	.	.
+^	.	>	.	>	.	>	.	=	.	/	S	.	.	.	.	.	.	.	.	.	.	.
+.	<	.	<	0	.	.	v	.	.	.	.	.	v	.	.	.	.	.	.	.	.	.
 .	.	.	.	v	.	.	.	.	.	.	.	.	.	.	.	.	.	.	.	.	.	.
 .	.	.	.	.	.	0	*	.	>	.	>	S	v	.	.	.	.	.	.	.	.	.
 .	.	.	10	*	.	.	.	.	.	.	.	.	.	.	.	.	.	.	.	.	.	.
@@ -424,6 +424,49 @@ const abs2 = `
 .	.	.	.	-1	*	S	.	.	.
 .	.	.	.	.	.	.	.	.	.`;
 
+const input = `2 x 1
+  11 x 1
+  101 x 1
+  110 x 0
+  123454321 x 1
+  1896618966 x 0
+  5619229165 x 1
+  3801638016 x 0
+  2784334872 x 1
+  6136336316 x 1
+  8245995428 x 1
+  3093530935 x 0
+  5374554735 x 1
+  9183691836 x 0
+  9190660919 x 1
+  3085225803 x 1
+  9152332519 x 1
+  1516015160 x 0
+  8077480774 x 0
+  9405775049 x 1
+  5023113205 x 1
+  6274224726 x 1
+  3950330593 x 1
+  6768008676 x 1
+  9343333439 x 1`;
+
+const numbers = input.split("\n").map((line) => {
+  const [num, result] = line.split("x").map((str) => str.trim());
+  return { num: parseInt(num), result: parseInt(result) };
+});
+
+console.log(numbers);
+(async () => {
+  for (let i = 0; i < numbers.length; i++) {
+    // console.log(numbers[i].num, isPalindrome(numbers[i].num) ? 1 : 0, numbers[i].result);
+    assert.strictEqual(
+      parseInt(await simulate(palindrome, numbers[i].num, 2, false)),
+      numbers[i].result,
+      `failed at ${numbers[i].num}`
+    );
+  }
+})();
+
 // simulate(abs2, -5, 7, false);
-// simulate(fact, 3, 2, false);
-solve3d(abs2, 2);
+// simulate(palindrome, 2, 2, false);
+// solve3d(abs2, 2);

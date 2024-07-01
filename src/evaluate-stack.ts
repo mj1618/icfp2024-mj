@@ -1,5 +1,4 @@
 import assert = require("node:assert");
-import { evaluateAST } from "./evaluate";
 import { ASTLambda, ASTNode, ASTValue } from "./parse";
 import {
   alienIntegerToHumanInteger,
@@ -62,10 +61,11 @@ const replaceVar = (
       };
   }
 };
+
 export const evaluate = (node: ASTNode, env: Env = {}): ASTValue => {
   console.log("");
   root = node;
-  return evaluateAST(node, env) as ASTValue;
+  return evaluateStack(node, env) as ASTValue;
 };
 
 export const logValue = (message: string) => {
@@ -215,9 +215,42 @@ export const evaluateBinary = (
   }
 };
 
+export const evaluateUnary = (value: string, child: ASTValue): ASTValue => {
+  switch (value) {
+    case "negate":
+      return {
+        type: "integer",
+        value: -1 * (child.value as number),
+      };
+    case "not":
+      return {
+        type: "boolean",
+        value: !(child.value as boolean),
+      };
+    case "string-to-int":
+      return {
+        type: "integer",
+        value: alienIntegerToHumanInteger(
+          humanStringToAlienString(child.value as string)
+        ),
+      };
+    case "int-to-string":
+      return {
+        type: "string",
+        value: alienStringToHumanString(
+          humanIntegerToAlienInteger(child.value as number)
+        ),
+      };
+    default:
+      throw new Error("invalid unary operator");
+  }
+};
+
 export const evaluateStack = (node: ASTNode, env: Env = {}): ASTValue => {
   return evaluateASTStack(node, env) as ASTValue;
 };
+
+let id = 0;
 
 export const evaluateASTStack = (root: ASTNode, env: Env = {}): ASTNode => {
   // if (root != null) {
@@ -225,174 +258,129 @@ export const evaluateASTStack = (root: ASTNode, env: Env = {}): ASTNode => {
   //   console.log("");
   // }
 
-  const unreduced: ASTNode[] = [root];
-  const reduced: ASTNode[] = [];
-  const values: ASTNode[] = [];
+  const expressions: ASTNode[] = [{ ...root, id: id++, parentId: -1 }];
+  let values: ASTNode[] = [];
 
-  while (reduced.length > 0 || unreduced.length > 0) {
-    while (unreduced.length > 0) {
-      console.log(
-        "\n--------------------------------------------------- reducing ---------------------------------------------------"
-      );
-      console.log("unreduced", unreduced);
-      console.log("reduced", reduced);
-      console.log("values", values);
+  while (expressions.length > 0) {
+    // console.log(
+    //   "\n--------------------------------------------------- reducing ---------------------------------------------------"
+    // );
+    // console.log("expressions", expressions);
+    // console.log("values", values);
 
-      const node = unreduced.shift()!;
-      switch (node.type) {
-        case "string":
-        case "integer":
-        case "boolean":
-        case "lambda":
-          values.push(node);
-          break;
+    const node = expressions.pop()!;
 
-        case "variable":
-          throw new Error("variable not implemented");
-        // values.push(node);
-        // break;
-        case "if":
-          reduced.push(node);
-          unreduced.push(node.condition);
-          break;
-        case "unary":
-          reduced.push(node);
-          unreduced.push(node.child);
-          break;
-        case "binary":
-          if (node.value === "apply") {
-            reduced.push(node);
-            unreduced.push(node.left);
-            values.push(node.right);
-          } else {
-            reduced.push(node);
-            unreduced.push(node.left);
-            unreduced.push(node.right);
-          }
-
-          // console.log("stack!", stack);
-          break;
-      }
-    }
-
-    // let currUnreduced = unreduced.length;
-    while (reduced.length > 0) {
-      const node = reduced[reduced.length - 1];
-
-      if (
-        (node.type === "unary" && values.length > 0) ||
-        (node.type === "if" && values.length > 0) ||
-        (node.type === "binary" && values.length >= 2) ||
-        (node.type !== "binary" && node.type !== "unary" && node.type !== "if")
-      ) {
-        console.log(
-          "\n--------------------------------------------------- evaluating ---------------------------------------------------"
-        );
-        console.log("unreduced", unreduced);
-        console.log("reduced", reduced);
-        console.log("values", values);
-        reduced.pop();
-
-        switch (node.type) {
-          case "string":
-          case "integer":
-          case "boolean":
-          case "lambda":
-            values.push(node);
-            break;
-          case "variable":
-            throw new Error("variable not implemented");
-          // values.push(node);
-          // break;
-          case "if":
-            if ((values.pop()!! as ASTValue).value as boolean) {
-              unreduced.push(node.then);
-            } else {
-              unreduced.push(node.else);
-            }
-            break;
-          case "unary":
-            const child = values.pop()!! as ASTValue;
-            switch (node.value) {
-              case "negate":
-                values.push({
-                  type: "integer",
-                  value: -1 * (child.value as number),
-                });
-                break;
-              case "not":
-                values.push({
-                  type: "boolean",
-                  value: !(child.value as boolean),
-                });
-                break;
-              case "string-to-int":
-                values.push({
-                  type: "integer",
-                  value: alienIntegerToHumanInteger(
-                    humanStringToAlienString(child.value as string)
-                  ),
-                });
-                break;
-              case "int-to-string":
-                values.push({
-                  type: "string",
-                  value: alienStringToHumanString(
-                    humanIntegerToAlienInteger(child.value as number)
-                  ),
-                });
-                break;
-            }
-            break;
-          case "binary":
-            assert(values.length >= 2, "not enough values on stack");
-
-            switch (node.value) {
-              case "add":
-              case "subtract":
-              case "mult":
-              case "div":
-              case "mod":
-              case "lt":
-              case "gt":
-              case "equal":
-              case "or":
-              case "and":
-              case "string-concat":
-              case "take":
-              case "drop":
-                const rightArg = values.pop()!! as ASTValue;
-                const leftArg = values.pop()!! as ASTValue;
-                values.push(
-                  evaluateBinary(node.value, leftArg, rightArg) as ASTValue
-                );
-                break;
-
-              case "apply":
-                const leftLambda = values.pop()!! as ASTLambda;
-                const rightValue = values.pop()!! as ASTValue;
-                assert(leftLambda.type === "lambda");
-                const newChild = replaceVar(
-                  leftLambda.child,
-                  (leftLambda as ASTLambda).value as number,
-                  rightValue
-                ) as ASTLambda;
-
-                unreduced.push(newChild);
-                break;
-
-              case "lazy-apply":
-                throw new Error("lazy-apply not implemented");
-
-              case "strict-apply":
-                throw new Error("strict-apply not implemented");
-            }
-        }
-      } else {
+    switch (node.type) {
+      case "string":
+      case "integer":
+      case "boolean":
+      case "lambda":
+        values.push(node);
         break;
-      }
+
+      case "variable":
+        throw new Error("variable not implemented");
+      // values.push(node);
+      // break;
+      case "if":
+        const ifValues = values.filter((v) => v.parentId === node.id);
+        if (ifValues.length > 0) {
+          values = values.filter((v) => v.parentId !== node.id);
+          const conditionValue = ifValues.pop()! as ASTValue;
+          if (conditionValue.value) {
+            expressions.push({
+              ...node.then,
+              id: id++,
+              parentId: node.parentId,
+            });
+          } else {
+            expressions.push({
+              ...node.else,
+              id: id++,
+              parentId: node.parentId,
+            });
+          }
+        } else {
+          expressions.push(node);
+          expressions.push({ ...node.condition, id: id++, parentId: node.id });
+        }
+
+        break;
+      case "unary":
+        const unaryValue = values.filter((v) => v.parentId === node.id);
+        if (unaryValue.length > 0) {
+          values = values.filter((v) => v.parentId !== node.id);
+          const childValue = unaryValue.pop()!;
+          const result = evaluateUnary(node.value, childValue as ASTValue);
+          values.push({
+            ...result,
+            id: id++,
+            parentId: node.parentId,
+          });
+        } else {
+          expressions.push(node);
+          expressions.push({ ...node.child, id: id++, parentId: node.id });
+        }
+
+        break;
+      case "binary":
+        const reversed = <T>(arr: T[]): T[] => {
+          const newArr = [...arr];
+          newArr.reverse();
+          return newArr;
+        };
+
+        const binaryValues = values.filter((v) => v.parentId === node.id);
+
+        assert(binaryValues.length !== 1);
+        if (binaryValues.length === 2) {
+          values = values.filter((v) => v.parentId !== node.id);
+          if (node.value === "apply") {
+            const leftLambda = binaryValues.pop()!! as ASTLambda & ASTNode;
+            const rightValue = binaryValues.pop()!! as ASTValue;
+            assert(leftLambda.type === "lambda");
+            const newChild = replaceVar(
+              leftLambda.child,
+              (leftLambda as ASTLambda).value as number,
+              rightValue
+            ) as ASTLambda;
+            expressions.push({
+              ...newChild,
+              id: id++,
+              parentId: node.parentId,
+            });
+          } else {
+            const leftVal = binaryValues.pop()!! as ASTValue;
+            const rightVal = binaryValues.pop()!! as ASTValue;
+            values.push({
+              ...evaluateBinary(node.value, leftVal, rightVal),
+              id: id++,
+              parentId: node.parentId,
+            });
+          }
+        } else {
+          if (node.value === "apply") {
+            expressions.push(node);
+            expressions.push({
+              ...node.left,
+              id: id++,
+              parentId: node.id,
+            });
+            values.push({ ...node.right, id: id++, parentId: node.id });
+          } else {
+            expressions.push(node);
+            expressions.push({
+              ...node.left,
+              id: id++,
+              parentId: node.id,
+            });
+            expressions.push({ ...node.right, id: id++, parentId: node.id });
+          }
+        }
+        break;
     }
   }
+  // console.log("values", values);
 
   return values.pop()!! as ASTNode;
 };

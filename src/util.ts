@@ -1,7 +1,6 @@
-import { evaluateASTLazy } from "../archive/evaluate-lazy";
 import { compileString } from "./compile";
 import { alienChars } from "./constants";
-import { evaluate } from "./evaluate";
+import { evaluate } from "./evaluate-stack";
 import { tokenize } from "./lex";
 import { ASTValue, parse } from "./parse";
 const util = require("util");
@@ -87,11 +86,4 @@ export const sendToServer = async (source: string) => {
   console.log(response);
   // logObject(evaluate(parse(tokenize(response))));
   return evaluate(parse(tokenize(response))) as ASTValue;
-};
-
-export const sendToServerLazy = async (source: string) => {
-  const response = await send(compileString(source));
-  console.log(response);
-  logObject(evaluateASTLazy(parse(tokenize(response))));
-  return evaluateASTLazy(parse(tokenize(response)));
 };
