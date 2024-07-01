@@ -434,4 +434,4 @@ const isPalindrome = (n: number) => {
 // test3d(palindrome);
 // solve3d(palindrome, 7);
 
-simulate(palindrome, 121, 7, true);
+simulate(palindrome, 12321, 7, true);
