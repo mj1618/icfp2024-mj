@@ -1,3 +1,4 @@
+import assert = require("assert");
 import { ASTValue } from "./parse";
 import { sendToServer } from "./util";
 const fs = require("fs");
@@ -26,19 +27,25 @@ const UP = "U",
 export const pathSearch = (
   grid: string[][],
   start: number[],
-  end: number[]
+  end: number[],
+  maxPathLength = Infinity
 ) => {
   const nrows = grid.length;
   const ncols = grid[0].length;
   const visited = Array(nrows)
     .fill(0)
     .map(() => Array(ncols).fill(false));
+  // assert.strictEqual(grid[start[0]][start[1]], "L");
   const queue = [[start, ""]];
 
   while (queue.length > 0) {
     const el = queue.shift();
     const curr = el![0] as any;
     const path = el![1] as any;
+
+    if (path.length > maxPathLength) {
+      return null;
+    }
     // console.log("popped", curr, "path", path);
     if (visited[curr[0]][curr[1]]) {
       continue;
@@ -88,23 +95,103 @@ export const solveLambdaMan = async (n: number) => {
   let prev = curr.slice();
 
   while (npills > 0) {
-    const comparisonPoint = curr; //prev; // curr // prev
-    const pills = loopGrid(grid, (row, col, item) => {
-      if (item === ".") {
-        return [
-          Math.pow(row - comparisonPoint[0], 2) +
-            Math.pow(col - comparisonPoint[1], 2),
-          row,
-          col,
-          row,
-          col,
-        ];
-      } else {
-        return null;
+    let pill: any;
+
+    let currFind = curr.slice();
+
+    if (pill == null) {
+      currFind = curr.slice();
+      currFind[1]++;
+      while (
+        currFind[1] < grid[0].length &&
+        grid[currFind[0]][currFind[1]] !== "#"
+      ) {
+        if (grid[currFind[0]][currFind[1]] === ".") {
+          pill = currFind;
+          break;
+        }
+        currFind[1]++;
       }
-    });
-    pills.sort();
-    const pill = pills[0].slice(3);
+    }
+
+    if (pill == null) {
+      currFind[1]--;
+      while (currFind[1] >= 0 && grid[currFind[0]][currFind[1]] !== "#") {
+        if (grid[currFind[0]][currFind[1]] === ".") {
+          pill = currFind;
+          break;
+        }
+        currFind[1]--;
+      }
+    }
+
+    if (pill == null) {
+      currFind = curr.slice();
+      currFind[0]++;
+      while (
+        currFind[0] < grid.length &&
+        grid[currFind[0]][currFind[1]] !== "#"
+      ) {
+        if (grid[currFind[0]][currFind[1]] === ".") {
+          pill = currFind;
+          break;
+        }
+        currFind[0]++;
+      }
+    }
+
+    if (pill == null) {
+      currFind = curr.slice();
+      currFind[0]--;
+      while (currFind[0] >= 0 && grid[currFind[0]][currFind[1]] !== "#") {
+        if (grid[currFind[0]][currFind[1]] === ".") {
+          pill = currFind;
+          break;
+        }
+        currFind[0]--;
+      }
+    }
+
+    if (pill == null) {
+      const comparisonPoint = curr; //prev; // curr // prev
+      let minLength = Infinity;
+      const pills = loopGrid(grid, (row, col, item) => {
+        if (item === ".") {
+          let nWalls = 0;
+          if (row > 0 && grid[row - 1][col] === "#") {
+            nWalls++;
+          }
+          if (row < nrows - 1 && grid[row + 1][col] === "#") {
+            nWalls++;
+          }
+          if (col > 0 && grid[row][col - 1] === "#") {
+            nWalls++;
+          }
+          if (col < ncols - 1 && grid[row][col + 1] === "#") {
+            nWalls++;
+          }
+          const path = pathSearch(grid, curr.slice(), [row, col], minLength);
+          minLength =
+            path != null ? Math.min(minLength, path.length) : minLength;
+          return [
+            path != null ? path.length : Infinity,
+            Math.pow(row - comparisonPoint[0], 2) +
+              Math.pow(col - comparisonPoint[1], 2),
+
+            row,
+            // col,
+            // row,
+            // col,
+            row,
+            col,
+          ];
+        } else {
+          return null;
+        }
+      });
+      pills.sort();
+      pill = pills[0].slice(3);
+    }
 
     const nextPath = pathSearch(grid, curr, pill);
     prev = curr.slice();
@@ -132,7 +219,28 @@ export const solveLambdaMan = async (n: number) => {
     console.log("");
   }
   console.log(path);
+  compress(path);
   fs.writeFileSync(`./soln/lambdaman/${n}.txt`, path);
 
   await sendToServer(`solve lambdaman${n} ${path}`);
+};
+
+const compress = (path: string) => {
+  let n = path.length;
+  for (let i = 0; i < 4; i++) {
+    let curr = path[0];
+    let count = 0;
+    for (let j = 0; j < path.length; j++) {
+      if (path[j] === curr) {
+        count++;
+      } else {
+        if (count > 10) {
+          n -= count - 12;
+        }
+        curr = path[j];
+        count = 1;
+      }
+    }
+  }
+  console.log("compressed", n);
 };

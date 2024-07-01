@@ -10,6 +10,6 @@
     "experimentalDecorators": true,
     "strict": true
   },
-  "include": ["src/**/*.ts", "archive/evaluate-lazy.ts"],
+  "include": ["src/**/*.ts", "archive/evaluate-lazy.ts", "src/evaluate-stack-v2.ts"],
   "exclude": ["node_modules", "src/**/*.spec.ts"]
 }

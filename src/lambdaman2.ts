@@ -37,6 +37,8 @@ export const bfs = (grid: string[][]) => {
     if (grid.join("\n").split(".").length === 1) {
       if (minPath === "" || path.length <= minPath.length) {
         minPath = path;
+        console.log("path", path);
+        process.exit();
       }
       continue;
     }
