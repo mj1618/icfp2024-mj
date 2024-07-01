@@ -154,13 +154,16 @@ export const evaluateAST = (root: ASTNode, env: Env = {}): ASTNode => {
         results.set(node, node);
         break;
       case "if":
-        stack.push({
-          node,
-          env,
-          result: results.get((node.condition as ASTNode))?.value
-            ? node.then
-            : node.else,
-        });
+        const conditionResult = results.get(node.condition) as ASTValue;
+        if (conditionResult && conditionResult.type === "boolean") {
+          stack.push({
+            node,
+            env,
+            result: conditionResult.value ? node.then : node.else,
+          });
+        } else {
+          stack.push({ node: node.condition, env });
+        }
         break;
       case "unary":
         stack.push({ node: node.child, env });
@@ -168,7 +171,7 @@ export const evaluateAST = (root: ASTNode, env: Env = {}): ASTNode => {
           node,
           env,
           result: (() => {
-            const child = results.get(node.child as ASTNode) as ASTValue;
+            const child = results.get(node.child) as ASTValue;
             switch (node.value) {
               case "negate":
                 return { type: "integer", value: -1 * (child.value as number) };
@@ -189,7 +192,7 @@ export const evaluateAST = (root: ASTNode, env: Env = {}): ASTNode => {
                   ),
                 };
               default:
-                throw new Error(`Unsupported unary operation: ${node.value}`);
+                throw new Error(`Unsupported unary operation: ${node}`);
             }
           })(),
         });
@@ -201,8 +204,8 @@ export const evaluateAST = (root: ASTNode, env: Env = {}): ASTNode => {
           node,
           env,
           result: (() => {
-            const left = results.get(node.left as ASTNode) as ASTValue;
-            const right = results.get(node.right as ASTNode) as ASTValue;
+            const left = results.get(node.left) as ASTValue;
+            const right = results.get(node.right) as ASTValue;
             switch (node.value) {
               case "add":
                 return { type: "integer", value: (left.value as number) + (right.value as number) };
@@ -232,21 +235,21 @@ export const evaluateAST = (root: ASTNode, env: Env = {}): ASTNode => {
               case "drop":
                 return { type: "string", value: (right.value as string).slice(left.value as number) };
               case "apply":
-                let lambda = node.left.type === "lambda" ? node.left : results.get(node.left as ASTNode) as ASTLambda;
+                let lambda = node.left.type === "lambda" ? node.left : results.get(node.left) as ASTLambda;
                 const newChild = replaceVar(lambda.child, (lambda as ASTLambda).value as number, node.right) as ASTLambda;
                 lambda = { ...lambda, child: newChild };
-                return results.get(lambda.child as ASTNode);
+                return results.get(lambda.child);
               case "lazy-apply":
               case "strict-apply":
                 throw new Error(`${node.value} not implemented`);
               default:
-                throw new Error(`Unsupported binary operation: ${node.value}`);
+                throw new Error(`Unsupported binary operation: ${node}`);
             }
           })(),
         });
         break;
       default:
-        throw new Error(`Unsupported node type: ${node.type}`);
+        throw new Error(`Unsupported node type: ${node}`);
     }
   }
 
