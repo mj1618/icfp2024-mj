@@ -31,7 +31,7 @@ export const main = async () => {
   // );
   // DRDRDRLLLUDLLUURURLLURLURRRRRDDDDULULULRRD
 
-  console.log((await sendToServer(`get lambdaman11`)).value);
+  console.log((await sendToServer(`get 3d7`)).value);
   // logAST()
   // B$ L! B$ v! B$ v! B$ v! B$ v! B$ v! B$ v! B$ v! B$ v! B$ v! B$ v! B$ v! B$ v! B$ v! B$ v! B$ v! B$ v! B$ v! B$ v! B$ v! B$ v! B$ v! B$ v! I" L! B+ B+ v! v! B+ v! v!
   // await sendRawToServer(`B. ${compileString("solve efficiency1 ")} U$ I"`);

@@ -1,3 +1,4 @@
+import assert = require("node:assert");
 import { sendToServer } from "./util";
 
 const readline = require("readline");
@@ -26,29 +27,132 @@ const mult = `
 . . 3 . 0 @ 3 . .
 . . . . . 3 . . .`;
 
-const fact = `
-. . . . 0 . . . . . . . . .
-. A > . = . . . . . . A > .
-. v 1 . . > . . . . . v 1 .
-. . - . . . + S . . < . - .
-. . . . . ^ . . . v . . . .
-. . v . . . > 1 < . . . v .
-. . . . . . A * . . . . . .
-. . v . . . . . . . . . v .
-. . . . . . . v . . . . . .
-. 1 @ 6 . . < . . . . 1 @ 6
-. . 4 . -1 @ 4 . . . . . 4 .
-. . . . . 4 . . . . . . . .
-. . . . . . . . . . . . . .`;
+const abs = `
+.	1	.	A	.	.	.	.	.	.	.	.	.	.	.	.	.	.	.	.
+-1	+	.	=	.	>	.	>	.	>	.	.	.	.	.	.	.	.	.	.
+.	.	v	.	.	A	.	.	^	0	+	S	.	.	.	.	.	.	.	.
+.	.	.	.	-1	*	.	.	.	.	.	.	.	.	.	.	.	.	.	.
+.	.	v	.	.	.	.	.	^	.	.	.	.	.	.	.	.	.	.	.
+.	.	.	.	.	v	.	.	.	.	.	.	.	.	.	.	.	.	.	.
+.	.	v	.	.	.	.	1	^	.	.	.	.	.	.	.	.	.	.	.
+.	.	.	>	.	=	.	*	.	.	.	.	.	.	.	.	.	.	.	.
+.	.	v	.	.	.	.	.	.	.	.	.	.	.	.	.	.	.	.	.
+.	.	.	>	.	>	.	>	.	>	.	>	.	>	.	>	.	>	.	.
+.	.	.	.	.	.	.	.	.	.	.	.	.	.	.	.	.	18	@	9
+.	.	.	.	.	.	.	.	.	.	.	.	.	.	.	.	.	.	13	.`;
 
-export const solve3d = async () => {
-  const merged = fact
+const abs2 = `
+.	.	.	.	.	.	.	.	.	.	A	.	.	.	.	.	.	.	.	.
+.	1	.	A	.	.	.	.	.	0	=	.	.	.	.	.	.	.	.	.
+-1	+	.	=	.	>	.	>	.	>	.	v	.	.	.	.	.	.	.	.
+.	.	v	.	.	A	.	.	^	A	/	S	.	.	.	.	.	.	.	.
+.	.	.	.	-1	*	.	.	.	.	.	.	.	.	.	.	.	.	.	.
+.	.	v	.	.	.	.	.	^	.	.	.	.	.	.	.	.	.	.	.
+.	.	.	.	.	v	.	.	.	.	.	.	.	.	.	.	.	.	.	.
+.	.	v	.	.	.	.	1	^	.	.	.	.	.	.	.	.	.	.	.
+.	.	.	>	.	=	.	*	.	.	.	.	.	.	.	.	.	.	.	.
+.	.	v	.	.	.	.	.	.	.	.	.	.	.	.	.	.	.	.	.
+.	.	.	>	.	>	.	>	.	>	.	>	.	>	.	>	.	>	.	.
+.	.	.	.	.	.	.	.	.	.	.	.	.	.	.	.	.	18	@	9
+.	.	.	.	.	.	.	.	.	.	.	.	.	.	.	.	.	.	13	.`;
+
+const lcm = `
+.	>	.	>	.	>	.	.	.	.	.	.
+^	.	.	.	.	.	v	.	.	.	.	.
+.	.	.	.	.	.	.	>	.	>	.	.
+^	.	.	A	>	.	%	.	.	7	@	0
+.	.	.	v	.	.	.	.	.	.	9	.
+^	0	.	.	.	.	v	.	.	.	.	.
+B	=	.	+	.	.	.	.	.	.	.	.
+.	.	.	.	.	6	@	1	.	.	.	.
+.	.	.	v	.	.	9	.	.	.	.	.
+.	A	.	.	.	.	.	.	.	.	.	.
+B	*	.	/	S	.	.	.	.	.	.	.
+.	.	.	.	.	.	.	.	.	.	.	.`;
+
+const fact = `
+. . . 1 . . . .
+A > . = . . . .
+v 1 . . > . . .
+. - . . . * S .
+. . . . ^ . . .
+. v . . A > . .
+. . > . > . * .
+. v . . . < . .
+. . . 0 @ 3 . .
+. v . . 7 . . .
+. . . . . . . .
+. v . . . . . .
+. . . . . . . .
+. v . . . . . .
+. . . . . . . .
+1 @ 14 . . . . .
+. 7 . . . . . .`;
+
+const gt = `
+.	1	.	1	.	-1	.	A	.
+99	+	.	+	.	+	.	=	S
+.	.	.	.	.	.	v	B	^
+.	.	.	.	.	.	.	=	.
+.	.	.	.	.	.	v	.	.
+.	.	.	.	.	.	.	.	.
+.	.	.	.	.	2	@	5	.
+.	.	.	.	.	.	3	.	.`;
+
+const prime = `
+.	.	1	.	A	.	A	.
+.	1	+	.	=	.	/	S
+.	.	.	.	.	.	.	.
+.	.	v	.	.	.	.	.
+.	<	.	.	0	.	.	.
+v	A	%	.	=	S	.	.
+.	.	.	.	.	.	.	.
+v	.	.	.	.	.	.	.
+.	.	.		.	.	.	.
+v	.	.	.	.	.	.	.
+.	>	.	.	.	.	.	.
+.	1	@	10	.	.	.	.
+.	.	7	.	.	.	.	.`;
+
+const palindrome = `
+.	.	.	.	.	.	.	.	10	.	.	.	.	.	.	.	.	.	.	.	.	.	.
+.	.	.	.	>	.	>	.	/	.	>	.	>	.	>	.	>	.	>	.	>	.	.
+.	.	.	^	.	.	10	.	.	.	.	.	.	.	.	.	.	.	.	.	.	v	.
+.	.	<	A	>	.	%	.	.	.	.	.	.	.	.	.	.	.	.	.	.	.	.
+0	=	.	.	.	.	.	.	.	.	.	.	.	.	.	.	.	.	.	.	18	@	1
+.	.	.	.	.	0	+	.	>	.	>	.	>	.	.	.	.	.	.	.	.	11	.
+.	#	.	.	.	.	.	.	A	.	A	.	.	v	.	.	.	.	.	.	.	.	.
+^	.	>	.	>	.	>	.	=		/	S	.	.	.	.	.	.	.	.	.	.	.
+.	<	.	<	0	.	.	v	.	.	.	.	.	v	.	.	.	.		.	.	.	.
+.	.	.	.	v	.	.	.	.	.	.	.	.	.	.	.	.	.	.	.	.	.	.
+.	.	.	.	.	.	0	*	.	>	.	>	S	v	.	.	.	.	.	.	.	.	.
+.	.	.	10	*	.	.	.	.	.	.	.	.	.	.	.	.	.	.	.	.	.	.
+.	.	.	.	.	>	.	>	.	>	.	>	.	+	.	>	.	.	.	.	.	.	.
+.	.	.	.	.	.	.	.	.	.	.	.	.	.	.	12	@	5	.	.	.	.	.
+.	.	.	.	.	.	.	.	.	.	.	.	.	.	.	.	11	.	.	.	.	.	.`;
+
+export const solve3d = async (source: string, n: number) => {
+  const merged = source
+    .replaceAll("\t", " ")
     .split("\n")
     .filter((row) => row.length > 0)
     .join("\n");
-
+  console.log("answer: ");
   console.log(merged);
-  console.log((await sendToServer(`solve 3d1\n${merged}`)).value);
+  console.log("result:");
+  console.log((await sendToServer(`solve 3d${n}\n${merged}`)).value);
+};
+
+export const test3d = async (source: string) => {
+  const merged = source
+    .replaceAll("\t", " ")
+    .split("\n")
+    .filter((row) => row.length > 0)
+    .join("\n");
+  console.log("answer: ");
+  console.log(`test 3d 3\n${merged}`);
+  console.log("result:");
+  console.log((await sendToServer(`test 3d 3 4\n${merged}`)).value);
 };
 
 // test3d();
@@ -72,8 +176,9 @@ const operate = (cell: string, x: number, y: number) => {
   }
 };
 
-const simulate = async (source: string, a = 0, b = 0) => {
+const simulate = async (source: string, a = 0, b = 0, pause = true) => {
   const merged = source
+    .replaceAll("\t", " ")
     .split("\n")
     .filter((row) => row.length > 0)
     .join("\n");
@@ -106,10 +211,13 @@ const simulate = async (source: string, a = 0, b = 0) => {
 
   while (true) {
     const grid = time[time.length - 1];
-    console.log(grid.map((row) => row.join("   ")).join("\n"));
+    console.log(grid.map((row) => row.join("    ")).join("\n"));
     console.log("----");
     // await new Promise((r) => setTimeout(r, 500));
-    await new Promise((r) => rl.question("Press enter", r));
+    if (pause) {
+      await new Promise((r) => rl.question("Press enter", r));
+    }
+
     const newGrid = grid.map((row) => row.slice());
 
     let newTimePieces = [];
@@ -221,7 +329,7 @@ const simulate = async (source: string, a = 0, b = 0) => {
                 }
                 break;
               case `#`:
-                if (x === y) {
+                if (x !== y) {
                   toWrite.push([r + 1, c, "" + x]);
                   toWrite.push([r, c + 1, "" + y]);
                   toClear.push([r - 1, c]);
@@ -240,6 +348,7 @@ const simulate = async (source: string, a = 0, b = 0) => {
             continue;
           }
           if (isAllSafe([[r - dy, c - dx]])) {
+            // console.log("checking", r, c, dx, dy, dt, x, timeTravel);
             newTimePieces.push([r - dy, c - dx, "" + x, dt]);
             if (timeTravel !== -1 && dt != timeTravel) {
               throw new Error("mismatch dt " + timeTravel + " " + dt);
@@ -260,11 +369,12 @@ const simulate = async (source: string, a = 0, b = 0) => {
 
     if (timeTravel > 0) {
       const newGrid = time[time.length - timeTravel - 1];
-      time = time.slice(0, time.length - timeTravel);
       for (let i = 0; i < newTimePieces.length; i++) {
         const [r, c, x, dt]: any[] = newTimePieces[i];
+        console.log("writing", r, c, x, dt, time.length);
         newGrid[r][c] = x;
       }
+      time = time.slice(0, time.length - timeTravel);
       time.push(newGrid);
     } else {
       for (let i = 0; i < toClear.length; i++) {
@@ -284,4 +394,33 @@ const simulate = async (source: string, a = 0, b = 0) => {
   }
 };
 
-simulate(fact, 3, 5);
+// temp = A
+// reverseNum = 0
+
+// while (temp != 0) {
+//   int digit = temp % 10;
+//   reverseNum = reverseNum * 10 + digit;
+//   temp = temp / 10;
+// }
+
+// const gcd = (a: number, b: number): number => {
+//   if (b === 0) {
+//     return a;
+//   }
+//   return gcd(b, a % b);
+// };
+
+// const lcm = (a: number, b: number): number => {
+//   return (a * b) / gcd(a, b);
+// };
+
+// console.log(lcm(3, 7));
+
+solve3d(palindrome, 7);
+// (async () => {
+//   for (let i = -100; i <= 100; i++) {
+//     assert.strictEqual(parseInt(await simulate(abs, i)), Math.abs(i));
+//   }
+// })();
+
+// simulate(palindrome, 1, 7, true);
