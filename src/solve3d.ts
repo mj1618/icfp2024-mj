@@ -150,7 +150,7 @@ export const test3d = async (source: string) => {
     .filter((row) => row.length > 0)
     .join("\n");
   console.log("answer: ");
-  console.log(`test 3d 3\n${merged}`);
+  console.log(`test 3d 3 4\n${merged}`);
   console.log("result:");
   console.log((await sendToServer(`test 3d 3 4\n${merged}`)).value);
 };
@@ -211,7 +211,7 @@ const simulate = async (source: string, a = 0, b = 0, pause = true) => {
 
   while (true) {
     const grid = time[time.length - 1];
-    console.log(grid.map((row) => row.join("    ")).join("\n"));
+    console.log(grid.map((row) => row.join(" ")).join("\n"));
     console.log("----");
     // await new Promise((r) => setTimeout(r, 500));
     if (pause) {
@@ -371,7 +371,7 @@ const simulate = async (source: string, a = 0, b = 0, pause = true) => {
       const newGrid = time[time.length - timeTravel - 1];
       for (let i = 0; i < newTimePieces.length; i++) {
         const [r, c, x, dt]: any[] = newTimePieces[i];
-        console.log("writing", r, c, x, dt, time.length);
+        // console.log("writing", r, c, x, dt, time.length);
         newGrid[r][c] = x;
       }
       time = time.slice(0, time.length - timeTravel);
@@ -386,10 +386,6 @@ const simulate = async (source: string, a = 0, b = 0, pause = true) => {
         newGrid[r][c] = x;
       }
       time.push(newGrid);
-    }
-    if (newGrid[slocation[0]][slocation[1]] !== "S") {
-      console.log("result", newGrid[slocation[0]][slocation[1]]);
-      return newGrid[slocation[0]][slocation[1]];
     }
   }
 };
@@ -417,10 +413,25 @@ const simulate = async (source: string, a = 0, b = 0, pause = true) => {
 // console.log(lcm(3, 7));
 
 // solve3d(palindrome, 7);
+
+const isPalindrome = (n: number) => {
+  const str = n.toString();
+  return str === str.split("").reverse().join("");
+};
+
 // (async () => {
-//   for (let i = -100; i <= 100; i++) {
-//     assert.strictEqual(parseInt(await simulate(abs, i)), Math.abs(i));
+//   for (let i = 1; i <= 9999999999; i++) {
+//     assert.strictEqual(
+//       parseInt(await simulate(palindrome, i, 0, false)),
+//       isPalindrome(i) ? 1 : 0
+//     );
+//     if (i % 10000 === 0) {
+//       console.log("passed", i);
+//     }
 //   }
 // })();
 
-simulate(palindrome, 13, 7, true);
+// test3d(palindrome);
+// solve3d(palindrome, 7);
+
+simulate(palindrome, 121, 7, true);
