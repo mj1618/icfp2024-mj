@@ -93,104 +93,131 @@ export const solveLambdaMan = async (n: number) => {
 
   let orig = curr.slice();
   let prev = curr.slice();
-
+  let counter = 0;
   while (npills > 0) {
+    counter++;
     let pill: any;
 
     let currFind = curr.slice();
 
-    if (pill == null) {
-      currFind = curr.slice();
-      currFind[1]++;
-      while (
-        currFind[1] < grid[0].length &&
-        grid[currFind[0]][currFind[1]] !== "#"
-      ) {
-        if (grid[currFind[0]][currFind[1]] === ".") {
-          pill = currFind;
-          break;
-        }
-        currFind[1]++;
-      }
-    }
+    // if (pill == null) {
+    //   currFind = curr.slice();
+    //   currFind[1]++;
+    //   while (
+    //     currFind[1] < grid[0].length &&
+    //     grid[currFind[0]][currFind[1]] !== "#"
+    //   ) {
+    //     if (grid[currFind[0]][currFind[1]] === ".") {
+    //       pill = currFind;
+    //       break;
+    //     }
+    //     currFind[1]++;
+    //   }
+    // }
 
-    if (pill == null) {
-      currFind[1]--;
-      while (currFind[1] >= 0 && grid[currFind[0]][currFind[1]] !== "#") {
-        if (grid[currFind[0]][currFind[1]] === ".") {
-          pill = currFind;
-          break;
-        }
-        currFind[1]--;
-      }
-    }
+    // if (pill == null) {
+    //   currFind[1]--;
+    //   while (currFind[1] >= 0 && grid[currFind[0]][currFind[1]] !== "#") {
+    //     if (grid[currFind[0]][currFind[1]] === ".") {
+    //       pill = currFind;
+    //       break;
+    //     }
+    //     currFind[1]--;
+    //   }
+    // }
 
-    if (pill == null) {
-      currFind = curr.slice();
-      currFind[0]++;
-      while (
-        currFind[0] < grid.length &&
-        grid[currFind[0]][currFind[1]] !== "#"
-      ) {
-        if (grid[currFind[0]][currFind[1]] === ".") {
-          pill = currFind;
-          break;
-        }
-        currFind[0]++;
-      }
-    }
+    // if (pill == null) {
+    //   currFind = curr.slice();
+    //   currFind[0]++;
+    //   while (
+    //     currFind[0] < grid.length &&
+    //     grid[currFind[0]][currFind[1]] !== "#"
+    //   ) {
+    //     if (grid[currFind[0]][currFind[1]] === ".") {
+    //       pill = currFind;
+    //       break;
+    //     }
+    //     currFind[0]++;
+    //   }
+    // }
 
-    if (pill == null) {
-      currFind = curr.slice();
-      currFind[0]--;
-      while (currFind[0] >= 0 && grid[currFind[0]][currFind[1]] !== "#") {
-        if (grid[currFind[0]][currFind[1]] === ".") {
-          pill = currFind;
-          break;
-        }
-        currFind[0]--;
-      }
-    }
+    // if (pill == null) {
+    //   currFind = curr.slice();
+    //   currFind[0]--;
+    //   while (currFind[0] >= 0 && grid[currFind[0]][currFind[1]] !== "#") {
+    //     if (grid[currFind[0]][currFind[1]] === ".") {
+    //       pill = currFind;
+    //       break;
+    //     }
+    //     currFind[0]--;
+    //   }
+    // }
 
     if (pill == null) {
       const comparisonPoint = curr; //prev; // curr // prev
       let minLength = Infinity;
-      const pills = loopGrid(grid, (row, col, item) => {
-        if (item === ".") {
-          let nWalls = 0;
-          if (row > 0 && grid[row - 1][col] === "#") {
-            nWalls++;
-          }
-          if (row < nrows - 1 && grid[row + 1][col] === "#") {
-            nWalls++;
-          }
-          if (col > 0 && grid[row][col - 1] === "#") {
-            nWalls++;
-          }
-          if (col < ncols - 1 && grid[row][col + 1] === "#") {
-            nWalls++;
-          }
-          const path = pathSearch(grid, curr.slice(), [row, col], minLength);
-          minLength =
-            path != null ? Math.min(minLength, path.length) : minLength;
-          return [
-            path != null ? path.length : Infinity,
-            Math.pow(row - comparisonPoint[0], 2) +
-              Math.pow(col - comparisonPoint[1], 2),
 
-            row,
-            // col,
-            // row,
-            // col,
-            row,
-            col,
-          ];
+      let foundRow = null;
+      // let pills = [];
+      for (let row = nrows - 1; row >= 0; row--) {
+        if (counter % 2 == 0) {
+          for (let col = 0; col < ncols; col++) {
+            if (grid[row][col] === ".") {
+              pill = [row, col];
+              break;
+            }
+          }
         } else {
-          return null;
+          for (let col = ncols - 1; col >= 0; col--) {
+            if (grid[row][col] === ".") {
+              pill = [row, col];
+              break;
+            }
+          }
         }
-      });
-      pills.sort();
-      pill = pills[0].slice(3);
+      }
+      //   const pills = loopGrid(grid, (row, col, item) => {
+      //     if (item === ".") {
+      //       // let nWalls = 0;
+      //       // if (row > 0 && grid[row - 1][col] === "#") {
+      //       //   nWalls++;
+      //       // }
+      //       // if (row < nrows - 1 && grid[row + 1][col] === "#") {
+      //       //   nWalls++;
+      //       // }
+      //       // if (col > 0 && grid[row][col - 1] === "#") {
+      //       //   nWalls++;
+      //       // }
+      //       // if (col < ncols - 1 && grid[row][col + 1] === "#") {
+      //       //   nWalls++;
+      //       // }
+      //       const path = pathSearch(grid, curr.slice(), [row, col], minLength);
+      // minLength =
+      //   path != null ? Math.min(minLength, path.length) : minLength;
+      //       return [
+      //         // row,
+      //         // col,
+      //         row,
+      //         0,
+      //         0,
+      //         // path != null ? path.length : Infinity,
+      //         // row,
+      //         // Math.pow(row - comparisonPoint[0], 2) +
+      //         //   Math.pow(col - comparisonPoint[1], 2),
+
+      //         // row,
+      //         // col,
+      //         // row,
+      //         // col,
+      //         row,
+      //         col,
+      //       ];
+      //     } else {
+      //       return null;
+      //     }
+      //   });
+      //   pills.sort();
+      //   pill = pills[0].slice(3);
     }
 
     const nextPath = pathSearch(grid, curr, pill);
@@ -242,5 +269,5 @@ const compress = (path: string) => {
       }
     }
   }
-  console.log("compressed", n);
+  // console.log("compressed", n);
 };

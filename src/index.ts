@@ -5,15 +5,15 @@ import { solveLambdaMan3 } from "./lambdaman3";
 
 export const main = async () => {
   // console.log(evaluate(parse(tokenize(`I-`))));
-  for (let i = 13; i <= 21; i++) {
-    try {
-      await solveLambdaMan(i);
-      console.log("Solved: ", i);
-    } catch (e) {
-      console.log("Could not solve: ", i);
-      console.error(e);
-    }
-  }
+  // for (let i = 19; i <= 21; i++) {
+  //   try {
+  //     await solveLambdaMan(i);
+  //     console.log("Solved: ", i);
+  //   } catch (e) {
+  //     console.log("Could not solve: ", i);
+  //     console.error(e);
+  //   }
+  // }
   // await sendToServerLazy("get efficiency1");
   // for (let i = 23; i <= 23; i++) {
   //   try {
@@ -31,8 +31,8 @@ export const main = async () => {
   //   `solve lambdaman3 DRDRLLLUDLLUURURLLURLUURRRRRDDDDULULULRRD`
   // );
   // DRDRDRLLLUDLLUURURLLURLURRRRRDDDDULULULRRD
-
-  console.log((await sendToServer(`get lambdaman`)).value);
+  console.log((await sendToServer(`get 3d`)).value);
+  console.log((await sendToServer(`get 3d2`)).value);
   // logAST()
   // B$ L! B$ v! B$ v! B$ v! B$ v! B$ v! B$ v! B$ v! B$ v! B$ v! B$ v! B$ v! B$ v! B$ v! B$ v! B$ v! B$ v! B$ v! B$ v! B$ v! B$ v! B$ v! B$ v! I" L! B+ B+ v! v! B+ v! v!
   // await sendRawToServer(`B. ${compileString("solve efficiency1 ")} U$ I"`);

@@ -41,21 +41,6 @@ const abs = `
 .	.	.	.	.	.	.	.	.	.	.	.	.	.	.	.	.	18	@	9
 .	.	.	.	.	.	.	.	.	.	.	.	.	.	.	.	.	.	13	.`;
 
-const abs2 = `
-.	.	.	.	.	.	.	.	.	.	A	.	.	.	.	.	.	.	.	.
-.	1	.	A	.	.	.	.	.	0	=	.	.	.	.	.	.	.	.	.
--1	+	.	=	.	>	.	>	.	>	.	v	.	.	.	.	.	.	.	.
-.	.	v	.	.	A	.	.	^	A	/	S	.	.	.	.	.	.	.	.
-.	.	.	.	-1	*	.	.	.	.	.	.	.	.	.	.	.	.	.	.
-.	.	v	.	.	.	.	.	^	.	.	.	.	.	.	.	.	.	.	.
-.	.	.	.	.	v	.	.	.	.	.	.	.	.	.	.	.	.	.	.
-.	.	v	.	.	.	.	1	^	.	.	.	.	.	.	.	.	.	.	.
-.	.	.	>	.	=	.	*	.	.	.	.	.	.	.	.	.	.	.	.
-.	.	v	.	.	.	.	.	.	.	.	.	.	.	.	.	.	.	.	.
-.	.	.	>	.	>	.	>	.	>	.	>	.	>	.	>	.	>	.	.
-.	.	.	.	.	.	.	.	.	.	.	.	.	.	.	.	.	18	@	9
-.	.	.	.	.	.	.	.	.	.	.	.	.	.	.	.	.	.	13	.`;
-
 const lcm = `
 .	>	.	>	.	>	.	.	.	.	.	.
 ^	.	.	.	.	.	v	.	.	.	.	.
@@ -69,25 +54,6 @@ B	=	.	+	.	.	.	.	.	.	.	.
 .	A	.	.	.	.	.	.	.	.	.	.
 B	*	.	/	S	.	.	.	.	.	.	.
 .	.	.	.	.	.	.	.	.	.	.	.`;
-
-const fact = `
-. . . 1 . . . .
-A > . = . . . .
-v 1 . . > . . .
-. - . . . * S .
-. . . . ^ . . .
-. v . . A > . .
-. . > . > . * .
-. v . . . < . .
-. . . 0 @ 3 . .
-. v . . 7 . . .
-. . . . . . . .
-. v . . . . . .
-. . . . . . . .
-. v . . . . . .
-. . . . . . . .
-1 @ 14 . . . . .
-. 7 . . . . . .`;
 
 const gt = `
 .	1	.	1	.	-1	.	A	.
@@ -348,7 +314,7 @@ const simulate = async (source: string, a = 0, b = 0, pause = true) => {
             continue;
           }
           if (isAllSafe([[r - dy, c - dx]])) {
-            // console.log("checking", r, c, dx, dy, dt, x, timeTravel);
+            console.log("checking", r, c, dx, dy, dt, x, timeTravel);
             newTimePieces.push([r - dy, c - dx, "" + x, dt]);
             if (timeTravel !== -1 && dt != timeTravel) {
               throw new Error("mismatch dt " + timeTravel + " " + dt);
@@ -371,7 +337,7 @@ const simulate = async (source: string, a = 0, b = 0, pause = true) => {
       const newGrid = time[time.length - timeTravel - 1];
       for (let i = 0; i < newTimePieces.length; i++) {
         const [r, c, x, dt]: any[] = newTimePieces[i];
-        // console.log("writing", r, c, x, dt, time.length);
+        console.log("writing", r, c, x, dt, time.length);
         newGrid[r][c] = x;
       }
       time = time.slice(0, time.length - timeTravel);
@@ -434,4 +400,30 @@ const isPalindrome = (n: number) => {
 // test3d(palindrome);
 // solve3d(palindrome, 7);
 
-simulate(palindrome, 12321, 7, true);
+const fact = `
+.	.	.	.	.	>	.	>	.	.
+.	A	.	-1	^	1	.	6	@	-1
+1	+	.	+	.	=	.	.	4	.
+.	.	.	.	.	.	.	.	.	.
+.	.	1	*	.	*	S	.	.	.
+.	.	.	.	v	.	.	.	.	.
+.	.	.	.	.	>	.	.	.	.
+.	.	.	.	.	4	@	3	.	.
+.	.	.	.	.	.	4	.	.	.`;
+
+const abs2 = `
+.	.	.	.	.	1	.	A	.	.
+.	.	.	.	-1	+	.	=	S	.
+.	.	<	.	<	.	.	.	.	.
+.	v	.	.	.	v	.	.	.	.
+.	.	.	99	.	.	.	.	.	.
+.	v	1	+	.	=	.	.	.	.
+.	.	.	.	.	.	.	.	.	.
+-3	@	6	.	A	#	.	.	.	.
+.	5	.	.	.	.	.	.	.	.
+.	.	.	.	-1	*	S	.	.	.
+.	.	.	.	.	.	.	.	.	.`;
+
+// simulate(abs2, -5, 7, false);
+// simulate(fact, 3, 2, false);
+solve3d(abs2, 2);
