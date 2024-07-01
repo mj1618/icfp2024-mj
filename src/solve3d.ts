@@ -416,11 +416,11 @@ const simulate = async (source: string, a = 0, b = 0, pause = true) => {
 
 // console.log(lcm(3, 7));
 
-solve3d(palindrome, 7);
+// solve3d(palindrome, 7);
 // (async () => {
 //   for (let i = -100; i <= 100; i++) {
 //     assert.strictEqual(parseInt(await simulate(abs, i)), Math.abs(i));
 //   }
 // })();
 
-// simulate(palindrome, 1, 7, true);
+simulate(palindrome, 13, 7, true);
