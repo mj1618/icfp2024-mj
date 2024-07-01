@@ -1,0 +1,254 @@
+import { ASTLambda, ASTNode, ASTValue } from "./parse";
+import {
+  alienIntegerToHumanInteger,
+  alienStringToHumanString,
+  humanIntegerToAlienInteger,
+  humanStringToAlienString,
+} from "./util";
+
+export type Result =
+  | {
+      type: "string";
+      value: string;
+    }
+  | { type: "integer"; value: number }
+  | { type: "boolean"; value: boolean }
+  | ASTNode;
+
+type Env = { [key: number]: ASTNode };
+
+export const replaceVar = (
+  node: ASTNode,
+  varName: number,
+  value: ASTNode
+): ASTNode => {
+  // console.log("replacing", varName, value, node);
+  switch (node.type) {
+    case "string":
+      return node;
+    case "integer":
+      return node;
+    case "boolean":
+      return node;
+    case "lambda":
+      if (node.value === varName) {
+        return node;
+      } else {
+        return { ...node, child: replaceVar(node.child, varName, value) };
+      }
+    case "variable":
+      // console.log("var", node.value, varName, value);
+      if (node.value === varName) {
+        return value;
+      } else {
+        return node;
+      }
+    case "if":
+      return {
+        ...node,
+        condition: replaceVar(node.condition, varName, value),
+        then: replaceVar(node.then, varName, value),
+        else: replaceVar(node.else, varName, value),
+      };
+    case "unary":
+      return { ...node, child: replaceVar(node.child, varName, value) };
+    case "binary":
+      return {
+        ...node,
+        left: replaceVar(node.left, varName, value),
+        right: replaceVar(node.right, varName, value),
+      };
+  }
+};
+export const evaluate = (node: ASTNode, env: Env = {}): ASTValue => {
+  // console.log("");
+  root = node;
+  return evaluateAST(node, env) as ASTValue;
+};
+
+export const logValue = (message: string) => {
+  process.stdout.write(message + " ");
+};
+
+const repeat = (str: string, n: number) => {
+  return new Array(n * 1).fill(str).join("");
+};
+
+export const logAST = (node: ASTNode, indent = 0) => {
+  // console.log(node);
+  switch (node.type) {
+    case "string":
+      logValue(`${repeat(" ", indent)}(Str:${node.value})`);
+      break;
+    case "integer":
+      logValue(`${repeat(" ", indent)}(Int:${node.value})`);
+      break;
+    case "boolean":
+      logValue(`${repeat(" ", indent)}(Bool:${node.value})`);
+      break;
+    case "lambda":
+      logValue(`${repeat(" ", indent)}(lambda${node.value}`);
+      console.log();
+      logAST(node.child, indent + 1);
+      console.log();
+      logValue(`${repeat(" ", indent)})`);
+      break;
+    case "variable":
+      logValue(`${repeat(" ", indent)}(variable${node.value})`);
+      break;
+    case "if":
+      logValue(`${repeat(" ", indent)}(if `);
+      console.log();
+      logAST(node.condition, indent + 1);
+      console.log();
+      logAST(node.then, indent + 1);
+      console.log();
+      logAST(node.else, indent + 1);
+      console.log();
+      logValue(`${repeat(" ", indent)})`);
+      break;
+    case "unary":
+      logValue(`${repeat(" ", indent)}(${node.value}`);
+      console.log();
+      logAST(node.child, indent + 1);
+      console.log();
+      logValue(`${repeat(" ", indent)})`);
+      break;
+    case "binary":
+      logValue(`${repeat(" ", indent)}(${node.value}`);
+      console.log();
+      logAST(node.left, indent + 1);
+      console.log();
+      logAST(node.right, indent + 1);
+      console.log();
+      logValue(`${repeat(" ", indent)})`);
+      break;
+  }
+};
+
+let root: ASTNode | null = null;
+
+type NodeAction = {
+  node: ASTNode;
+  env: Env;
+  result?: ASTNode;
+};
+
+export const evaluateAST = (root: ASTNode, env: Env = {}): ASTNode => {
+  const stack: NodeAction[] = [{ node: root, env }];
+  const results = new Map<ASTNode, ASTNode>();
+
+  while (stack.length > 0) {
+    const { node, env, result } = stack.pop()!;
+    if (result) {
+      results.set(node, result);
+      continue;
+    }
+
+    switch (node.type) {
+      case "string":
+      case "integer":
+      case "boolean":
+      case "lambda":
+      case "variable":
+        results.set(node, node);
+        break;
+      case "if":
+        stack.push({
+          node,
+          env,
+          result: results.get((node.condition as ASTNode))?.value
+            ? node.then
+            : node.else,
+        });
+        break;
+      case "unary":
+        stack.push({ node: node.child, env });
+        stack.push({
+          node,
+          env,
+          result: (() => {
+            const child = results.get(node.child as ASTNode) as ASTValue;
+            switch (node.value) {
+              case "negate":
+                return { type: "integer", value: -1 * (child.value as number) };
+              case "not":
+                return { type: "boolean", value: !(child.value as boolean) };
+              case "string-to-int":
+                return {
+                  type: "integer",
+                  value: alienIntegerToHumanInteger(
+                    humanStringToAlienString(child.value as string)
+                  ),
+                };
+              case "int-to-string":
+                return {
+                  type: "string",
+                  value: alienStringToHumanString(
+                    humanIntegerToAlienInteger(child.value as number)
+                  ),
+                };
+              default:
+                throw new Error(`Unsupported unary operation: ${node.value}`);
+            }
+          })(),
+        });
+        break;
+      case "binary":
+        stack.push({ node: node.left, env });
+        stack.push({ node: node.right, env });
+        stack.push({
+          node,
+          env,
+          result: (() => {
+            const left = results.get(node.left as ASTNode) as ASTValue;
+            const right = results.get(node.right as ASTNode) as ASTValue;
+            switch (node.value) {
+              case "add":
+                return { type: "integer", value: (left.value as number) + (right.value as number) };
+              case "subtract":
+                return { type: "integer", value: (left.value as number) - (right.value as number) };
+              case "mult":
+                return { type: "integer", value: (left.value as number) * (right.value as number) };
+              case "div":
+                const divVal = (left.value as number) / (right.value as number);
+                return { type: "integer", value: divVal < 0 ? Math.ceil(divVal) : Math.floor(divVal) };
+              case "mod":
+                return { type: "integer", value: (left.value as number) % (right.value as number) };
+              case "lt":
+                return { type: "boolean", value: (left.value as number) < (right.value as number) };
+              case "gt":
+                return { type: "boolean", value: (left.value as number) > (right.value as number) };
+              case "equal":
+                return { type: "boolean", value: left.value == right.value };
+              case "or":
+                return { type: "boolean", value: (left.value as boolean) || (right.value as boolean) };
+              case "and":
+                return { type: "boolean", value: (left.value as boolean) && (right.value as boolean) };
+              case "string-concat":
+                return { type: "string", value: (left.value as string) + (right.value as string) };
+              case "take":
+                return { type: "string", value: (right.value as string).slice(0, left.value as number) };
+              case "drop":
+                return { type: "string", value: (right.value as string).slice(left.value as number) };
+              case "apply":
+                let lambda = node.left.type === "lambda" ? node.left : results.get(node.left as ASTNode) as ASTLambda;
+                const newChild = replaceVar(lambda.child, (lambda as ASTLambda).value as number, node.right) as ASTLambda;
+                lambda = { ...lambda, child: newChild };
+                return results.get(lambda.child as ASTNode);
+              case "lazy-apply":
+              case "strict-apply":
+                throw new Error(`${node.value} not implemented`);
+              default:
+                throw new Error(`Unsupported binary operation: ${node.value}`);
+            }
+          })(),
+        });
+        break;
+      default:
+        throw new Error(`Unsupported node type: ${node.type}`);
+    }
+  }
+
+  return results.get(root) as ASTNode;
+};
