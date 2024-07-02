@@ -64,7 +64,6 @@ const replaceVar = (
 
 export const evaluate = (node: ASTNode, env: Env = {}): ASTValue => {
   console.log("");
-  root = node;
   return evaluateStack(node) as ASTValue;
 };
 
@@ -127,8 +126,6 @@ export const logAST = (node: ASTNode, indent = 0) => {
       break;
   }
 };
-
-let root: ASTNode | null = null;
 
 export const evaluateBinary = (
   value: string,
