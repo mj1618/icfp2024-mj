@@ -209,8 +209,8 @@ export const drop = (a: Dsl, b: Dsl): DslBinary => {
   return createBinary(a, b, "D");
 };
 
-export const apply = (a: Dsl, b: Dsl): DslBinary => {
-  return createBinary(a, b, "$");
+export const apply = (a: Dsl, ...args: Dsl[]): Dsl => {
+  return args.reduce((acc, arg) => createBinary(acc, arg, "$"), a);
 };
 
 export const ifThenElse = (cond: Dsl, a: Dsl, b: Dsl): DslIf => {
@@ -298,8 +298,8 @@ export const Y = (fn: Dsl) =>
 
 const fns: { [key: string]: Dsl } = {};
 
-export const fn = (args: string[], body: Dsl): Dsl => {
-  return args.reduceRight((acc, arg) => lam(arg, acc), body);
+export const fn = (args: string[], body: () => Dsl): Dsl => {
+  return args.reduceRight((acc, arg) => lam(arg, acc), body());
 };
 
 export const call = (fn: Dsl, ...args: Dsl[]): Dsl => {

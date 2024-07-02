@@ -2,13 +2,18 @@ import test from "node:test";
 import {
   Dsl,
   Y,
+  a,
+  add,
   apply,
+  b,
+  c,
   compileDsl,
   f,
   fn,
   gt,
   ifThenElse,
   int,
+  lt,
   mult,
   n,
   sub,
@@ -76,8 +81,7 @@ const assertExpr = (dsl: Dsl, expected: any) => {
 // });
 
 test("factorial", () => {
-  const factorial = fn(
-    [f, n],
+  const factorial = fn([f, n], () =>
     ifThenElse(
       gt(var_(n), int(1)),
       mult(var_(n), apply(var_(f), sub(var_(n), int(1)))),
@@ -88,4 +92,23 @@ test("factorial", () => {
   const expr = apply(Y(factorial), int(5));
 
   assertExpr(expr, 120);
+});
+
+test("a + b", () => {
+  const addRecur = fn([f, a, b, c], () => {
+    const alt1 = lt(var_(a), int(1));
+    const blt1 = lt(var_(b), int(1));
+    const bSub1 = sub(var_(b), int(1));
+    const aSub1 = sub(var_(a), int(1));
+    const cAdd1 = add(var_(c), int(1));
+    return ifThenElse(
+      alt1,
+      ifThenElse(blt1, var_(c), apply(var_(f), var_(a), bSub1, cAdd1)),
+      apply(var_(f), aSub1, var_(b), cAdd1)
+    );
+  });
+
+  const expr = apply(Y(addRecur), int(3), int(5), int(0));
+
+  assertExpr(expr, 8);
 });
