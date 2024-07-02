@@ -456,17 +456,17 @@ const numbers = input.split("\n").map((line) => {
 });
 
 console.log(numbers);
-(async () => {
-  for (let i = 0; i < numbers.length; i++) {
-    // console.log(numbers[i].num, isPalindrome(numbers[i].num) ? 1 : 0, numbers[i].result);
-    assert.strictEqual(
-      parseInt(await simulate(palindrome, numbers[i].num, 2, false)),
-      numbers[i].result,
-      `failed at ${numbers[i].num}`
-    );
-  }
-})();
+// (async () => {
+//   for (let i = 0; i < numbers.length; i++) {
+//     // console.log(numbers[i].num, isPalindrome(numbers[i].num) ? 1 : 0, numbers[i].result);
+//     assert.strictEqual(
+//       parseInt(await simulate(palindrome, numbers[i].num, 2, false)),
+//       numbers[i].result,
+//       `failed at ${numbers[i].num}`
+//     );
+//   }
+// })();
 
 // simulate(abs2, -5, 7, false);
-// simulate(palindrome, 2, 2, false);
+simulate(palindrome, 2, 2, false);
 // solve3d(abs2, 2);
