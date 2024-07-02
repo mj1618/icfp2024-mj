@@ -257,11 +257,11 @@ export const evaluateASTStack = (root: ASTNode): ASTNode => {
   let values: ASTNode[] = [];
 
   while (expressions.length > 0) {
-    console.log(
-      "\n--------------------------------------------------- reducing ---------------------------------------------------"
-    );
-    console.log("expressions", expressions);
-    console.log("values", values);
+    // console.log(
+    //   "\n--------------------------------------------------- reducing ---------------------------------------------------"
+    // );
+    // console.log("expressions", expressions);
+    // console.log("values", values);
 
     const node = expressions.pop()!;
 
@@ -275,8 +275,7 @@ export const evaluateASTStack = (root: ASTNode): ASTNode => {
 
       case "variable":
         throw new Error("non-replaced variable found: " + node.value);
-      // values.push(node);
-      // break;
+
       case "if":
         const ifValues = values.filter((v) => v.parentId === node.id);
         if (ifValues.length > 0) {
@@ -316,8 +315,8 @@ export const evaluateASTStack = (root: ASTNode): ASTNode => {
           expressions.push(node);
           expressions.push({ ...node.child, id: id++, parentId: node.id });
         }
-
         break;
+
       case "binary":
         const reversed = <T>(arr: T[]): T[] => {
           const newArr = [...arr];
