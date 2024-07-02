@@ -253,20 +253,15 @@ export const evaluateStack = (node: ASTNode, env: Env = {}): ASTValue => {
 let id = 0;
 
 export const evaluateASTStack = (root: ASTNode, env: Env = {}): ASTNode => {
-  // if (root != null) {
-  //   logAST(node);
-  //   console.log("");
-  // }
-
   const expressions: ASTNode[] = [{ ...root, id: id++, parentId: -1 }];
   let values: ASTNode[] = [];
 
   while (expressions.length > 0) {
-    // console.log(
-    //   "\n--------------------------------------------------- reducing ---------------------------------------------------"
-    // );
-    // console.log("expressions", expressions);
-    // console.log("values", values);
+    console.log(
+      "\n--------------------------------------------------- reducing ---------------------------------------------------"
+    );
+    console.log("expressions", expressions);
+    console.log("values", values);
 
     const node = expressions.pop()!;
 

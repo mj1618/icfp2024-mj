@@ -1,7 +1,4 @@
-import { solveLambdaMan2 } from "./lambdaman2";
-import { solveLambdaMan } from "./lambdaman";
 import { sendToServer } from "./util";
-import { solveLambdaMan3 } from "./lambdaman3";
 
 export const main = async () => {
   // console.log(evaluate(parse(tokenize(`I-`))));
