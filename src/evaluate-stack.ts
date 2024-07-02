@@ -246,13 +246,13 @@ export const evaluateUnary = (value: string, child: ASTValue): ASTValue => {
   }
 };
 
-export const evaluateStack = (node: ASTNode, env: Env = {}): ASTValue => {
-  return evaluateASTStack(node, env) as ASTValue;
+export const evaluateStack = (node: ASTNode): ASTValue => {
+  return evaluateASTStack(node) as ASTValue;
 };
 
 let id = 0;
 
-export const evaluateASTStack = (root: ASTNode, env: Env = {}): ASTNode => {
+export const evaluateASTStack = (root: ASTNode): ASTNode => {
   const expressions: ASTNode[] = [{ ...root, id: id++, parentId: -1 }];
   let values: ASTNode[] = [];
 
@@ -274,7 +274,7 @@ export const evaluateASTStack = (root: ASTNode, env: Env = {}): ASTNode => {
         break;
 
       case "variable":
-        throw new Error("variable not implemented");
+        throw new Error("non-replaced variable found: " + node.value);
       // values.push(node);
       // break;
       case "if":
