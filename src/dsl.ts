@@ -25,8 +25,8 @@ type DslVar = {
 type DslIf = {
   type: "if";
   cond: Dsl;
-  a: Dsl;
-  b: Dsl;
+  then: Dsl;
+  else: Dsl;
 };
 
 type DslLambda = {
@@ -213,12 +213,10 @@ export const apply = (a: Dsl, ...args: Dsl[]): Dsl => {
   return args.reduce((acc, arg) => createBinary(acc, arg, "$"), a);
 };
 
-export const ifThenElse = (cond: Dsl, a: Dsl, b: Dsl): DslIf => {
+export const ifThenElse = (arg: { cond: Dsl; then: Dsl; else: Dsl }): DslIf => {
   return {
     type: "if",
-    cond,
-    a,
-    b,
+    ...arg,
   };
 };
 export const lam = (arg: string, body: Dsl): DslLambda => {
@@ -328,10 +326,10 @@ export const compileDsl = (
       )} ${compileDsl(dsl.right, varMapping, varNumber)}`;
     case "if":
       return `? ${compileDsl(dsl.cond, varMapping, varNumber)} ${compileDsl(
-        dsl.a,
+        dsl.then,
         varMapping,
         varNumber
-      )} ${compileDsl(dsl.b, varMapping, varNumber)}`;
+      )} ${compileDsl(dsl.else, varMapping, varNumber)}`;
     case "lambda":
       return `L${varNumber} ${compileDsl(
         dsl.body,

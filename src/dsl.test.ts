@@ -82,11 +82,11 @@ const assertExpr = (dsl: Dsl, expected: any) => {
 
 test("factorial", () => {
   const factorial = fn([f, n], () =>
-    ifThenElse(
-      gt(var_(n), int(1)),
-      mult(var_(n), apply(var_(f), sub(var_(n), int(1)))),
-      int(1)
-    )
+    ifThenElse({
+      cond: gt(var_(n), int(1)),
+      then: mult(var_(n), apply(var_(f), sub(var_(n), int(1)))),
+      else: int(1),
+    })
   );
 
   const expr = apply(Y(factorial), int(5));
@@ -101,11 +101,15 @@ test("a + b", () => {
     const bSub1 = sub(var_(b), int(1));
     const aSub1 = sub(var_(a), int(1));
     const cAdd1 = add(var_(c), int(1));
-    return ifThenElse(
-      alt1,
-      ifThenElse(blt1, var_(c), apply(var_(f), var_(a), bSub1, cAdd1)),
-      apply(var_(f), aSub1, var_(b), cAdd1)
-    );
+    return ifThenElse({
+      cond: alt1,
+      then: ifThenElse({
+        cond: blt1,
+        then: var_(c),
+        else: apply(var_(f), var_(a), bSub1, cAdd1),
+      }),
+      else: apply(var_(f), aSub1, var_(b), cAdd1),
+    });
   });
 
   const expr = apply(Y(addRecur), int(3), int(5), int(0));
