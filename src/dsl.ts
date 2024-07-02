@@ -296,8 +296,6 @@ export const Y = (fn: Dsl) =>
     fn
   );
 
-const fns: { [key: string]: Dsl } = {};
-
 export const fn = (args: string[], body: () => Dsl): Dsl => {
   return args.reduceRight((acc, arg) => lam(arg, acc), body());
 };
