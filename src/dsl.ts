@@ -20,6 +20,7 @@ type DslString = {
 type DslVar = {
   type: "var";
   name: string;
+  call: (...args: Dsl[]) => Dsl;
 };
 
 type DslIf = {
@@ -33,6 +34,7 @@ type DslLambda = {
   type: "lambda";
   arg: string;
   body: Dsl;
+  call: (...args: Dsl[]) => Dsl;
 };
 
 type DslValue = DslBoolean | DslInt | DslString;
@@ -48,9 +50,19 @@ type DslBinary = {
   left: Dsl;
   right: Dsl;
   operator: string;
+  call: (...args: Dsl[]) => Dsl;
 };
 
-export type Dsl = DslValue | DslUnary | DslBinary | DslIf | DslLambda | DslVar;
+export type Dsl = (
+  | DslValue
+  | DslUnary
+  | DslBinary
+  | DslIf
+  | DslLambda
+  | DslVar
+) & {
+  call?: (...args: Dsl[]) => Dsl;
+};
 
 export const binaryOpToString = (op: string) => {
   switch (op) {
@@ -150,12 +162,16 @@ export const intToString = (a: Dsl): DslUnary => {
 };
 
 export const createBinary = (a: Dsl, b: Dsl, op: string): DslBinary => {
-  return {
+  const ret: DslBinary = {
     type: "binary",
     left: a,
     right: b,
     operator: op,
+    call: (...args: Dsl[]) => {
+      return apply(ret, ...args);
+    },
   };
+  return ret;
 };
 
 export const add = (a: Dsl, b: Dsl): DslBinary => {
@@ -220,18 +236,27 @@ export const ifThenElse = (arg: { cond: Dsl; then: Dsl; else: Dsl }): DslIf => {
   };
 };
 export const lam = (arg: string, body: Dsl): DslLambda => {
-  return {
+  const ret: DslLambda = {
     type: "lambda",
     arg,
     body,
+    call: (...args: Dsl[]): Dsl => {
+      return apply(ret, ...args);
+    },
   };
+
+  return ret;
 };
 
 export const var_ = (name: string): DslVar => {
-  return {
+  const ret: DslVar = {
     type: "var",
     name,
+    call: (...args: Dsl[]) => {
+      return apply(ret, ...args);
+    },
   };
+  return ret;
 };
 
 export const a = "a",
@@ -282,17 +307,13 @@ export const C = lam(
 
 export const W = lam(x, lam(y, apply(apply(var_(x), var_(y)), var_(y))));
 
-export const Y = (fn: Dsl) =>
-  apply(
-    lam(
-      f,
-      apply(
-        lam(x, apply(var_(f), apply(var_(x), var_(x)))),
-        lam(x, apply(var_(f), apply(var_(x), var_(x))))
-      )
-    ),
-    fn
-  );
+export const Y = (fn: Dsl): DslLambda =>
+  lam(
+    f,
+    lam(x, var_(f).call(var_(x).call(var_(x)))).call(
+      lam(x, var_(f).call(var_(x).call(var_(x))))
+    )
+  ).call(fn) as DslLambda;
 
 export const fn = (args: string[], body: () => Dsl): Dsl => {
   return args.reduceRight((acc, arg) => lam(arg, acc), body());

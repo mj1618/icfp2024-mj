@@ -4,7 +4,6 @@ import {
   Y,
   a,
   add,
-  apply,
   b,
   c,
   compileDsl,
@@ -84,12 +83,12 @@ test("factorial", () => {
   const factorial = fn([f, n], () =>
     ifThenElse({
       cond: gt(var_(n), int(1)),
-      then: mult(var_(n), apply(var_(f), sub(var_(n), int(1)))),
+      then: mult(var_(n), var_(f).call(sub(var_(n), int(1)))),
       else: int(1),
     })
   );
 
-  const expr = apply(Y(factorial), int(5));
+  const expr = Y(factorial).call(int(5));
 
   assertExpr(expr, 120);
 });
@@ -106,13 +105,13 @@ test("a + b", () => {
       then: ifThenElse({
         cond: blt1,
         then: var_(c),
-        else: apply(var_(f), var_(a), bSub1, cAdd1),
+        else: var_(f).call(var_(a), bSub1, cAdd1),
       }),
-      else: apply(var_(f), aSub1, var_(b), cAdd1),
+      else: var_(f).call(aSub1, var_(b), cAdd1),
     });
   });
 
-  const expr = apply(Y(addRecur), int(3), int(5), int(0));
+  const expr = Y(addRecur).call(int(3), int(5), int(0));
 
   assertExpr(expr, 8);
 });

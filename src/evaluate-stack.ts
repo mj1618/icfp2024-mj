@@ -251,7 +251,18 @@ let id = 0;
 
 export const evaluateASTStack = (root: ASTNode): ASTNode => {
   const expressions: ASTNode[] = [{ ...root, id: id++, parentId: -1 }];
-  let values: ASTNode[] = [];
+  let values: { [key: string]: ASTNode[] } = {};
+  const addValue = (node: ASTNode) => {
+    values[node.parentId!!] = values[node.parentId!!]
+      ? values[node.parentId!!].concat(node)
+      : [node];
+  };
+  const getValues = (node: ASTNode) => values[node.id!!] || [];
+  const popValues = (node: ASTNode) => {
+    const vs = values[node.id!!] || [];
+    delete values[node.id!!];
+    return vs;
+  };
 
   while (expressions.length > 0) {
     // console.log(
@@ -267,16 +278,15 @@ export const evaluateASTStack = (root: ASTNode): ASTNode => {
       case "integer":
       case "boolean":
       case "lambda":
-        values.push(node);
+        addValue(node);
         break;
 
       case "variable":
         throw new Error("non-replaced variable found: " + node.value);
 
       case "if":
-        const ifValues = values.filter((v) => v.parentId === node.id);
-        if (ifValues.length > 0) {
-          values = values.filter((v) => v.parentId !== node.id);
+        if (getValues(node).length > 0) {
+          const ifValues = popValues(node);
           const conditionValue = ifValues.pop()! as ASTValue;
           if (conditionValue.value) {
             expressions.push({
@@ -298,12 +308,10 @@ export const evaluateASTStack = (root: ASTNode): ASTNode => {
 
         break;
       case "unary":
-        const unaryValue = values.filter((v) => v.parentId === node.id);
-        if (unaryValue.length > 0) {
-          values = values.filter((v) => v.parentId !== node.id);
-          const childValue = unaryValue.pop()!;
+        if (getValues(node).length > 0) {
+          const childValue = popValues(node)[0] as ASTValue;
           const result = evaluateUnary(node.value, childValue as ASTValue);
-          values.push({
+          addValue({
             ...result,
             id: id++,
             parentId: node.parentId,
@@ -315,17 +323,8 @@ export const evaluateASTStack = (root: ASTNode): ASTNode => {
         break;
 
       case "binary":
-        const reversed = <T>(arr: T[]): T[] => {
-          const newArr = [...arr];
-          newArr.reverse();
-          return newArr;
-        };
-
-        const binaryValues = values.filter((v) => v.parentId === node.id);
-
-        assert(binaryValues.length !== 1);
-        if (binaryValues.length === 2) {
-          values = values.filter((v) => v.parentId !== node.id);
+        if (getValues(node).length === 2) {
+          const binaryValues = popValues(node);
           if (node.value === "apply") {
             const leftLambda = binaryValues.pop()!! as ASTLambda & ASTNode;
             const rightValue = binaryValues.pop()!! as ASTValue;
@@ -343,7 +342,7 @@ export const evaluateASTStack = (root: ASTNode): ASTNode => {
           } else {
             const leftVal = binaryValues.pop()!! as ASTValue;
             const rightVal = binaryValues.pop()!! as ASTValue;
-            values.push({
+            addValue({
               ...evaluateBinary(node.value, leftVal, rightVal),
               id: id++,
               parentId: node.parentId,
@@ -357,7 +356,7 @@ export const evaluateASTStack = (root: ASTNode): ASTNode => {
               id: id++,
               parentId: node.id,
             });
-            values.push({ ...node.right, id: id++, parentId: node.id });
+            addValue({ ...node.right, id: id++, parentId: node.id });
           } else {
             expressions.push(node);
             expressions.push({
@@ -373,5 +372,5 @@ export const evaluateASTStack = (root: ASTNode): ASTNode => {
   }
   // console.log("values", values);
 
-  return values.pop()!! as ASTNode;
+  return getValues({ id: -1 } as any)[0] as ASTNode;
 };
